@@ -201,7 +201,6 @@ const EditPortfolio: React.FC = () => {
             Add Project
           </button>
         </section>
-
         {/* Contact Section */}
         <section className="mb-6">
           <h3 className="text-xl font-semibold text-gray-800">Contact</h3>
@@ -223,6 +222,63 @@ const EditPortfolio: React.FC = () => {
               handleInputChange("contact", "phone", e.target.value)
             }
           />
+
+          {/* Social Links Section */}
+          <h4 className="text-lg font-semibold text-gray-800 mt-4">
+            Social Links
+          </h4>
+          {Object.entries(formData?.contact?.socials || {}).map(
+            ([platform, link], index) => (
+              <div key={index} className="flex items-center mt-2">
+                {/* Platform Input */}
+                <input
+                  type="text"
+                  className="w-1/3 p-2 border rounded"
+                  placeholder="Platform (e.g., LinkedIn)"
+                  value={platform}
+                  readOnly
+                />
+                {/* Link Input */}
+                <input
+                  type="text"
+                  className="w-2/3 ml-2 p-2 border rounded"
+                  placeholder="URL (e.g., https://linkedin.com/in/username)"
+                  value={link}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleInputChange("contact", "socials", {
+                      ...formData?.contact.socials,
+                      [platform]: e.target.value,
+                    })
+                  }
+                />
+                <button
+                  type="button"
+                  className="ml-2 text-red-500"
+                  onClick={() => {
+                    const updatedSocials = { ...formData?.contact.socials };
+                    delete updatedSocials[platform]; // Remove the platform
+                    handleInputChange("contact", "socials", updatedSocials);
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            )
+          )}
+          {/* Add New Social Link */}
+          <button
+            type="button"
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
+            onClick={() => {
+              const updatedSocials = {
+                ...formData?.contact.socials,
+                NewPlatform: "",
+              };
+              handleInputChange("contact", "socials", updatedSocials);
+            }}
+          >
+            Add Social Link
+          </button>
         </section>
 
         {/* Save Button */}
