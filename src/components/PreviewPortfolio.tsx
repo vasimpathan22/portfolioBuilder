@@ -1,18 +1,24 @@
 import React, { Component } from "react";
-import { WithNavigation } from "./WithNavigation";
+import { WithNavigation } from "../navigator/WithNavigation";
 import { PortfolioContext } from "../context/PortfolioContext";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { NavigateFunction, Location } from "react-router-dom";
 
-class PreviewPortfolioClass extends Component<
-  object,
-  { isPdfGenerating: boolean }
-> {
+type PreviewPortfolioProps = {
+  navigate?: NavigateFunction;
+  location?: Location;
+};
+
+type stateProps = {
+  isPdfGenerating: boolean;
+};
+class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   static contextType = PortfolioContext;
 
   portfolioRef: React.RefObject<HTMLDivElement>;
 
-  constructor(props: object) {
+  constructor(props: PreviewPortfolioProps) {
     super(props);
     this.state = {
       isPdfGenerating: false,
@@ -49,7 +55,7 @@ class PreviewPortfolioClass extends Component<
   }
 
   handleEditClick() {
-    this.props.navigate("/edit");
+    this.props.navigate?.("/edit");
   }
 
   render() {
@@ -168,4 +174,6 @@ class PreviewPortfolioClass extends Component<
   }
 }
 
-export default WithNavigation(PreviewPortfolioClass);
+const PreviewPortfolioWithNavigation = WithNavigation(PreviewPortfolio);
+
+export default PreviewPortfolioWithNavigation;

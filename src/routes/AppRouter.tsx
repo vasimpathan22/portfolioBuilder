@@ -1,16 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import PreviewPortfolioClass from "../components/PreviewPortfolioClass";
-import EditPortfolioClass from "../components/EditPortfolioClass";
-import HomeClass from "../components/HomeClass";
+import HomeWithNavigation from "../components/Home";
+import EditPortfolioWithNavigation from "../components/EditPortfolio";
+import PreviewPortfolioWithNavigation from "../components/PreviewPortfolio";
 
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomeClass />} />
-        <Route path="/edit" element={<EditPortfolioClass />} />
-        <Route path="/preview" element={<PreviewPortfolioClass />} />
-        <Route path="/create" element={<EditPortfolioClass />} />
+        <Route path="/" element={<HomeWithNavigation />} />
+        <Route path="/edit" element={<EditPortfolioWithNavigation />} />
+        <Route path="/preview" element={<PreviewPortfolioWithNavigation />} />
+        <Route path="/create" element={<EditPortfolioWithNavigation />} />
       </Routes>
     </BrowserRouter>
   );
