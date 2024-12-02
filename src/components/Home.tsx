@@ -1,22 +1,28 @@
 import { Component } from "react";
-import { WithNavigation } from "./WithNavigation";
+import { WithNavigation } from "../navigator/WithNavigation";
 import { PortfolioContext } from "../context/PortfolioContext";
+import { Location, NavigateFunction } from "react-router-dom";
 
-class HomeClass extends Component {
+type HomeProps = {
+  navigate?: NavigateFunction;
+  location?: Location;
+};
+
+class Home extends Component<HomeProps> {
   static contextType = PortfolioContext;
 
-  constructor(props: any) {
+  constructor(props: HomeProps) {
     super(props);
     this.handleViewPortfolio = this.handleViewPortfolio.bind(this);
     this.handleCreatePortfolio = this.handleCreatePortfolio.bind(this);
   }
 
   handleViewPortfolio = () => {
-    this.props.navigate("/preview");
+    this.props.navigate?.("/preview");
   };
 
   handleCreatePortfolio = () => {
-    this.props.navigate("/create");
+    this.props.navigate?.("/create");
   };
 
   render() {
@@ -53,4 +59,5 @@ class HomeClass extends Component {
   }
 }
 
-export default WithNavigation(HomeClass);
+const HomeWithNavigation = WithNavigation(Home);
+export default HomeWithNavigation;

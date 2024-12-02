@@ -1,16 +1,23 @@
 import { Component } from "react";
-import { WithNavigation } from "./WithNavigation";
+import { WithNavigation } from "../navigator/WithNavigation";
 import { PortfolioContext } from "../context/PortfolioContext";
 import portfolioService from "../service/portfolioService";
 import { Portfolio } from "../types/types";
+import { NavigateFunction, Location } from "react-router-dom";
 
-class EditPortfolioClass extends Component<
-  object,
-  { formData: Portfolio | null }
-> {
+type EditPortfolioProps = {
+  navigate?: NavigateFunction;
+  location?: Location;
+};
+
+type stateProps = {
+  formData: Portfolio | null;
+};
+
+class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
   static contextType = PortfolioContext;
 
-  constructor(props: object) {
+  constructor(props: EditPortfolioProps) {
     super(props);
 
     this.state = {
@@ -137,7 +144,7 @@ class EditPortfolioClass extends Component<
     const { navigate } = this.props;
 
     updatePortfolio(formData);
-    navigate("/preview");
+    navigate?.("/preview");
   }
 
   render() {
@@ -362,4 +369,6 @@ class EditPortfolioClass extends Component<
   }
 }
 
-export default WithNavigation(EditPortfolioClass);
+const EditPortfolioWithNavigation = WithNavigation(EditPortfolio);
+
+export default EditPortfolioWithNavigation;
