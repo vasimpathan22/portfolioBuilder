@@ -7,7 +7,7 @@ type childrenProp = {
   children: React.ReactNode;
 };
 
-type portfolioContextType = {
+export type portfolioContextType = {
   portfolio: Portfolio | null;
   setPortfolio: React.Dispatch<React.SetStateAction<Portfolio | null>>;
   updatePortfolio: (newPortfolio: Portfolio) => void;
@@ -16,15 +16,15 @@ type portfolioContextType = {
 export const PortfolioContext = createContext<portfolioContextType | null>(
   null
 );
+
 export const PortfolioProvider = ({ children }: childrenProp) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(
-    portfolioService.getPortfolio()
-  ); //update portfolio with the local state
+    portfolioService.getLocalStoragePortfolio()
+  );
 
-  //used to store the changes regarding the portfolio
   const updatePortfolio = (newPortfolio: Portfolio) => {
     setPortfolio(newPortfolio);
-    portfolioService.savePortfolio(newPortfolio);
+    portfolioService.savePortfolioToLocalStorage(newPortfolio);
   };
 
   return (
