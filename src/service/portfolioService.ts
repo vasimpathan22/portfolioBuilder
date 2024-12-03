@@ -3,7 +3,7 @@ import { Portfolio } from "../types/types";
 class PortfolioService {
   constructor() {}
 
-  getLocalStoragePortfolio(): Portfolio | null {
+  getLocalStoragePortfolio(): Portfolio {
     const savedPortfolio = localStorage.getItem("portfolio");
     if (savedPortfolio) {
       return JSON.parse(savedPortfolio);

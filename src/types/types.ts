@@ -4,7 +4,7 @@ interface About {
   description: string;
 }
 
-interface Project {
+export interface Project {
   title: string;
   description: string;
   link: string;

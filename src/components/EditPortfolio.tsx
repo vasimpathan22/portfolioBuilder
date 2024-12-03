@@ -1,8 +1,11 @@
 import { Component } from "react";
 import { WithNavigation } from "../navigator/WithNavigation";
-import { PortfolioContext } from "../context/PortfolioContext";
+import {
+  PortfolioContext,
+  portfolioContextType,
+} from "../context/PortfolioContext";
 import portfolioService from "../service/portfolioService";
-import { Portfolio } from "../types/types";
+import { Portfolio, Project } from "../types/types";
 import { NavigateFunction, Location } from "react-router-dom";
 
 type EditPortfolioProps = {
@@ -11,31 +14,35 @@ type EditPortfolioProps = {
 };
 
 type stateProps = {
-  formData: Portfolio | null;
+  formData: Portfolio;
 };
 
 class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
   static contextType = PortfolioContext;
+  declare context: portfolioContextType;
 
   constructor(props: EditPortfolioProps) {
     super(props);
 
     this.state = {
-      formData: portfolioService.getLocalStoragePortfolio() || null,
+      formData: portfolioService.getLocalStoragePortfolio(),
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleArrayChange = this.handleArrayChange.bind(this);
     this.handleArrayAdd = this.handleArrayAdd.bind(this);
     this.handleArrayRemove = this.handleArrayRemove.bind(this);
-    this.handleContactChange = this.handleContactChange.bind(this);
     this.handleSocialLinkChange = this.handleSocialLinkChange.bind(this);
     this.handleSocialLinkRemove = this.handleSocialLinkRemove.bind(this);
     this.handleSocialLinkAdd = this.handleSocialLinkAdd.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  handleInputChange(section: string, key: string, value: string) {
+  handleInputChange<K extends keyof Portfolio, F extends keyof Portfolio[K]>(
+    section: K,
+    key: F,
+    value: Portfolio[K][F]
+  ) {
     this.setState((prevState) => ({
       formData: {
         ...prevState.formData,
@@ -47,7 +54,11 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayChange(section: string, index: number, value: string) {
+  handleArrayChange<K extends "skills" | "projects">(
+    section: K,
+    index: number,
+    value: K extends "skills" ? string : Project
+  ) {
     const updatedArray = [...this.state.formData[section]];
     updatedArray[index] = value;
     this.setState((prevState) => ({
@@ -58,19 +69,24 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayAdd(section: string, newItem: string) {
-    const updatedArray = [...this.state.formData[section], newItem];
+  handleArrayAdd<K extends "skills" | "projects">(
+    section: K,
+    elementToAdd: K extends "skills" ? string : Project
+  ) {
     this.setState((prevState) => ({
       formData: {
         ...prevState.formData,
-        [section]: updatedArray,
+        [section]: [...prevState.formData[section], elementToAdd],
       },
     }));
   }
 
-  handleArrayRemove(section: string, index: number) {
+  handleArrayRemove<K extends "skills" | "projects">(
+    section: K,
+    indexToRemove: number
+  ) {
     const updatedArray = this.state.formData[section].filter(
-      (_: any, i: any) => i !== index
+      (_currentValue, index) => index !== indexToRemove
     );
     this.setState((prevState) => ({
       formData: {
@@ -80,19 +96,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleContactChange = (key, value) => {
-    this.setState((prevState) => ({
-      formData: {
-        ...prevState.formData,
-        contact: {
-          ...prevState.formData.contact,
-          [key]: value,
-        },
-      },
-    }));
-  };
-
-  handleSocialLinkChange = (platform, value) => {
+  handleSocialLinkChange(platform: string, value: string) {
     this.setState((prevState) => ({
       formData: {
         ...prevState.formData,
@@ -105,9 +109,9 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
         },
       },
     }));
-  };
+  }
 
-  handleSocialLinkAdd = () => {
+  handleSocialLinkAdd() {
     this.setState((prevState) => ({
       formData: {
         ...prevState.formData,
@@ -115,14 +119,14 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
           ...prevState.formData.contact,
           socials: {
             ...prevState.formData.contact.socials,
-            NewPlatform: "",
+            newPlatform: "",
           },
         },
       },
     }));
-  };
+  }
 
-  handleSocialLinkRemove = (platform) => {
+  handleSocialLinkRemove(platform: string) {
     this.setState((prevState) => {
       const updatedSocials = { ...prevState.formData.contact.socials };
       delete updatedSocials[platform];
@@ -136,7 +140,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
         },
       };
     });
-  };
+  }
 
   handleSubmit() {
     const { updatePortfolio } = this.context;
@@ -149,7 +153,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
 
   render() {
     const { formData } = this.state;
-    const isUserCreatingPortfolio = this.props.location.pathname === "/create";
+    const isUserCreatingPortfolio = this.props.location?.pathname === "/create";
 
     return (
       <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md mt-3">
@@ -162,6 +166,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
               className="w-full mt-2 p-2 border rounded"
               placeholder="Name"
               value={formData?.about?.name || ""}
+              required
               onChange={(e) =>
                 this.handleInputChange("about", "name", e.target.value)
               }
@@ -284,12 +289,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
 
             {/* Email Input */}
             <input
-              type="text"
+              type="email"
               className="w-full mt-2 p-2 border rounded"
               placeholder="Email"
               value={this.state.formData?.contact?.email || ""}
               onChange={(e) =>
-                this.handleContactChange("email", e.target.value)
+                this.handleInputChange("contact", "email", e.target.value)
               }
             />
 
@@ -300,7 +305,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
               placeholder="Phone"
               value={this.state.formData?.contact?.phone || ""}
               onChange={(e) =>
-                this.handleContactChange("phone", e.target.value)
+                this.handleInputChange("contact", "phone", e.target.value)
               }
             />
 

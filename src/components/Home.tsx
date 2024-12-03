@@ -1,6 +1,9 @@
 import { Component } from "react";
 import { WithNavigation } from "../navigator/WithNavigation";
-import { PortfolioContext } from "../context/PortfolioContext";
+import {
+  PortfolioContext,
+  portfolioContextType,
+} from "../context/PortfolioContext";
 import { Location, NavigateFunction } from "react-router-dom";
 
 type HomeProps = {
@@ -10,6 +13,7 @@ type HomeProps = {
 
 class Home extends Component<HomeProps> {
   static contextType = PortfolioContext;
+  declare context: portfolioContextType;
 
   constructor(props: HomeProps) {
     super(props);
