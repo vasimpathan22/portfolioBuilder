@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import { WithNavigation } from "../navigator/WithNavigation";
-import { PortfolioContext } from "../context/PortfolioContext";
+import {
+  PortfolioContext,
+  portfolioContextType,
+} from "../context/PortfolioContext";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { NavigateFunction, Location } from "react-router-dom";
@@ -13,8 +16,10 @@ type PreviewPortfolioProps = {
 type stateProps = {
   isPdfGenerating: boolean;
 };
+
 class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   static contextType = PortfolioContext;
+  declare context: portfolioContextType;
 
   portfolioRef: React.RefObject<HTMLDivElement>;
 
@@ -60,7 +65,7 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
 
   render() {
     const { portfolio } = this.context;
-    const { about, skills, projects, contact } = portfolio;
+    const { about, skills, projects, contact } = { ...portfolio };
     const { isPdfGenerating } = this.state;
 
     return (
