@@ -4,9 +4,19 @@ import {
   PortfolioContext,
   portfolioContextType,
 } from "../context/PortfolioContext";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Button,
+  Box,
+  Grid,
+  CardActions,
+} from "@mui/material";
 import { NavigateFunction, Location } from "react-router-dom";
+import { GitHub, LinkedIn, Download, Edit } from "@mui/icons-material";
+import html2pdf from "html2pdf.js";
 
 type PreviewPortfolioProps = {
   navigate?: NavigateFunction;
@@ -34,27 +44,15 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   }
 
   async handleDownloadClick() {
-    const portfolioElement = this.portfolioRef.current;
-    if (!portfolioElement) return;
-
     this.setState({ isPdfGenerating: true });
-
     setTimeout(async () => {
-      const canvas = await html2canvas(portfolioElement, {
-        scale: 3,
-        useCORS: true,
-        logging: true,
-      });
-
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("portfolio.pdf");
-
+      const element = document.getElementById("content-download");
+      const options = {
+        filename: "react_webpage.pdf",
+        html2canvas: { scale: 2, logging: true, letterRendering: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+      await html2pdf().from(element).set(options).save();
       this.setState({ isPdfGenerating: false });
     }, 0);
   }
@@ -69,112 +67,208 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
     const { isPdfGenerating } = this.state;
 
     return (
-      <div
+      <Box
         ref={this.portfolioRef}
-        className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md mt-3"
+        id="content-download"
+        p={4}
+        maxWidth="md"
+        mx="auto"
+        bgcolor="linear-gradient(to right, #e3f2fd, #bbdefb)"
+        borderRadius={4}
+        boxShadow={3}
       >
         {/* About Section */}
-        <section className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">{about?.name}</h1>
-          <h2 className="text-lg text-gray-600">{about?.tagline}</h2>
-          <p className="mt-2 text-gray-700">{about?.description}</p>
-        </section>
+        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+          <CardHeader
+            sx={{
+              bgcolor: "primary.main",
+              color: "white",
+              borderRadius: "8px 8px 0 0",
+            }}
+            title={
+              <Typography variant="h4" component="h2" fontWeight="bold">
+                {about?.name}
+              </Typography>
+            }
+            subheader={
+              <Typography variant="subtitle1" color="white">
+                {about?.tagline}
+              </Typography>
+            }
+          />
+          <CardContent>
+            <Typography variant="body1" color="textSecondary">
+              {about?.description}
+            </Typography>
+          </CardContent>
+        </Card>
 
         {/* Skills Section */}
-        <section className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-800">Skills</h3>
-          <ul className="flex flex-wrap mt-2">
-            {skills?.map((skill, index) => (
-              <li
-                key={index}
-                className="bg-blue-400 text-white px-4 py-1 m-1 rounded-full text-sm shadow-sm"
-              >
-                {skill}
-              </li>
-            ))}
-          </ul>
-        </section>
+        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+          <CardHeader
+            title="Skills"
+            titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
+          />
+          <CardContent>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              {skills?.map((skill, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "inline-block",
+                    px: 2,
+                    py: 0.5,
+                    bgcolor: "primary.light",
+                    color: "primary.contrastText",
+                    borderRadius: 2,
+                    fontWeight: "bold",
+                    fontSize: "0.9rem",
+                    textAlign: "center",
+                    border: "1px solid",
+                    borderColor: "primary.main",
+                  }}
+                >
+                  {skill}
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Projects Section */}
-        <section className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-800">Projects</h3>
-          <ul className="mt-2 space-y-4">
-            {projects?.map((project, index) => (
-              <li
-                key={index}
-                className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
-              >
-                <h4 className="text-lg font-bold text-gray-800">
-                  {project.title}
-                </h4>
-                <p className="text-gray-700">{project.description}</p>
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline mt-2 block"
-                >
-                  View Project
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+          <CardHeader
+            title="Projects"
+            titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
+          />
+          <CardContent>
+            <Grid container spacing={2}>
+              {projects?.map((project, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      height: "100%",
+                      transition: "transform 0.2s",
+                      "&:hover": { transform: "scale(1.02)" },
+                    }}
+                  >
+                    <CardHeader
+                      title={project.title}
+                      titleTypographyProps={{ variant: "h6" }}
+                    />
+                    <CardContent>
+                      <Typography variant="body2" color="textSecondary">
+                        {project.description}
+                      </Typography>
+                      <Button
+                        href={project.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        sx={{ mt: 1, color: "blue" }}
+                        color="secondary"
+                        variant="text"
+                      >
+                        View Project
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
 
         {/* Contact Section */}
-        <section>
-          <h3 className="text-xl font-semibold text-gray-800">Contact</h3>
-          <p className="mt-2 text-gray-700">
-            Email:{" "}
-            <a
-              href={`mailto:${contact?.email}`}
-              className="text-blue-600 hover:underline"
-            >
-              {contact?.email}
-            </a>
-          </p>
-          <p className="text-gray-700">
-            Phone: <span>{contact?.phone}</span>
-          </p>
-          <div className="mt-2">
-            <h4 className="font-semibold text-gray-800">Socials</h4>
-            <ul className="flex space-x-4 mt-1">
-              {Object.entries(contact?.socials ?? {}).map(
-                ([platform, link], index) => (
-                  <li key={index}>
-                    <a
+        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+          <CardHeader
+            title="Contact"
+            titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
+          />
+          <CardContent>
+            <Typography variant="body1">
+              <strong>Email:</strong>{" "}
+              <a href={`mailto:${contact?.email}`} style={{ color: "#1976d2" }}>
+                {contact?.email}
+              </a>
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 1 }}>
+              <strong>Phone:</strong> {contact?.phone}
+            </Typography>
+            <Box mt={2}>
+              <Typography variant="subtitle1">Socials:</Typography>
+              <Box display="flex" gap={2} mt={1}>
+                {Object.entries(contact?.socials ?? {}).map(
+                  ([platform, link], index) => (
+                    <Button
+                      key={index}
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
+                      size="small"
+                      startIcon={
+                        platform.toLowerCase() === "github" ? (
+                          <GitHub />
+                        ) : (
+                          <LinkedIn />
+                        )
+                      }
+                      sx={{
+                        textTransform: "capitalize",
+                        "&:hover": { bgcolor: "primary.light" },
+                      }}
                     >
                       {platform}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-        </section>
+                    </Button>
+                  )
+                )}
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
 
-        {/* Buttons */}
+        {/* Action Buttons */}
         {!isPdfGenerating && (
-          <section className="flex justify-end no-print">
-            <button
+          <CardActions sx={{ justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              color="primary"
               onClick={this.handleDownloadClick}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4  mr-3"
+              sx={{
+                mr: 2,
+                fontWeight: "bold",
+                borderRadius: "20px",
+                boxShadow: 2,
+                "&:hover": { bgcolor: "primary.light" },
+              }}
+              startIcon={<Download />}
             >
-              Download Pdf
-            </button>
-            <button
+              Download PDF
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
               onClick={this.handleEditClick}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
+              sx={{
+                fontWeight: "bold",
+                borderRadius: "20px",
+                boxShadow: 2,
+                "&:hover": { bgcolor: "secondary.light" },
+              }}
+              startIcon={<Edit />}
             >
               Edit Portfolio
-            </button>
-          </section>
+            </Button>
+          </CardActions>
         )}
-      </div>
+      </Box>
     );
   }
 }

@@ -27,6 +27,24 @@ class PortfolioService {
     localStorage.setItem("portfolio", JSON.stringify(portfolio));
     console.log("portfolioService::savedPortfolio");
   }
+
+  resetPortfolio(): Portfolio {
+    const newPortfolio: Portfolio = {
+      about: { description: "", name: "", tagline: "" },
+      skills: [],
+      projects: [],
+      contact: {
+        email: "",
+        phone: "",
+        socials: {
+          LinkedIn: "",
+          GitHub: "",
+        },
+      },
+    };
+    localStorage.setItem("portfolio", JSON.stringify(newPortfolio));
+    return newPortfolio;
+  }
 }
 
 const portfolioService = new PortfolioService();

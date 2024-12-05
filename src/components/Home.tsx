@@ -5,6 +5,15 @@ import {
   portfolioContextType,
 } from "../context/PortfolioContext";
 import { Location, NavigateFunction } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Typography,
+  Card,
+  CardContent,
+  CardActions,
+  Container,
+} from "@mui/material";
 
 type HomeProps = {
   navigate?: NavigateFunction;
@@ -32,33 +41,69 @@ class Home extends Component<HomeProps> {
   render() {
     const { portfolio } = this.context;
     const isPortfolioCreatedAlready = portfolio?.about?.name;
+
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-2xl p-8 bg-white shadow-lg rounded-lg">
-          <h1 className="text-4xl font-extrabold text-gray-800 mb-6">
-            Welcome to Portfolio Builder
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            {isPortfolioCreatedAlready
-              ? "Your portfolio is ready to view."
-              : "Create a stunning portfolio in minutes!"}
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button
-              onClick={
-                isPortfolioCreatedAlready
-                  ? this.handleViewPortfolio
-                  : this.handleCreatePortfolio
-              }
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded shadow-md transition duration-300"
-            >
-              {isPortfolioCreatedAlready
-                ? "View Portfolio"
-                : "Create Portfolio"}
-            </button>
-          </div>
-        </div>
-      </div>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "grey.100",
+          p: 2,
+        }}
+      >
+        <Container maxWidth="sm">
+          <Card elevation={5} sx={{ borderRadius: 3 }}>
+            <CardContent>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  mb: 3,
+                  color: "black",
+                }}
+              >
+                Welcome to Portfolio Builder
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  textAlign: "center",
+                  mb: 4,
+                  color: "text.secondary",
+                }}
+              >
+                {isPortfolioCreatedAlready
+                  ? "Your portfolio is ready to view."
+                  : "Create a stunning portfolio in minutes!"}
+              </Typography>
+            </CardContent>
+            <CardActions sx={{ justifyContent: "center", gap: 2, pb: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={
+                  isPortfolioCreatedAlready
+                    ? this.handleViewPortfolio
+                    : this.handleCreatePortfolio
+                }
+                sx={{
+                  px: 4,
+                  fontWeight: "bold",
+                }}
+              >
+                {isPortfolioCreatedAlready
+                  ? "View Portfolio"
+                  : "Create Portfolio"}
+              </Button>
+            </CardActions>
+          </Card>
+        </Container>
+      </Box>
     );
   }
 }
