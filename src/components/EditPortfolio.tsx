@@ -244,7 +244,10 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
         <Typography variant="h4" gutterBottom>
           {isUserCreatingPortfolio ? "Create Portfolio" : "Edit Portfolio"}
         </Typography>
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form
+          onSubmit={(e) => e.preventDefault()}
+          onBlur={this.validateFieldsBeforeSubmitting}
+        >
           {/* About Section */}
           <Card sx={{ mb: 4 }}>
             <CardContent>
