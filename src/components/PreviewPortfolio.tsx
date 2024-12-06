@@ -43,8 +43,13 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
     this.handleEditClick = this.handleEditClick.bind(this);
   }
 
+  componentDidMount(): void {
+    const { portfolio } = this.context;
+    this.setState({ pdfName: portfolio?.about?.name || "" });
+  }
+
   async handleDownloadClick() {
-    const element = document.getElementById("content-download");
+    const element = document.querySelector("#content-download");
     const options = {
       filename: `${this.state.pdfName}_portfolio.pdf`,
       html2canvas: { scale: 2, logging: true, letterRendering: true },
@@ -60,7 +65,6 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   render() {
     const { portfolio } = this.context;
     const { about, skills, projects, contact } = { ...portfolio };
-    this.setState({ pdfName: about?.name || "" });
 
     return (
       <Box
