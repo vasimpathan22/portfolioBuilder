@@ -24,7 +24,7 @@ type PreviewPortfolioProps = {
 };
 
 type stateProps = {
-  isPdfGenerating: boolean;
+  pdfName: string;
 };
 
 class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
@@ -36,7 +36,7 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   constructor(props: PreviewPortfolioProps) {
     super(props);
     this.state = {
-      isPdfGenerating: false,
+      pdfName: "",
     };
     this.portfolioRef = React.createRef();
     this.handleDownloadClick = this.handleDownloadClick.bind(this);
@@ -44,17 +44,13 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   }
 
   async handleDownloadClick() {
-    this.setState({ isPdfGenerating: true });
-    setTimeout(async () => {
-      const element = document.getElementById("content-download");
-      const options = {
-        filename: "react_webpage.pdf",
-        html2canvas: { scale: 2, logging: true, letterRendering: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
-      await html2pdf().from(element).set(options).save();
-      this.setState({ isPdfGenerating: false });
-    }, 0);
+    const element = document.getElementById("content-download");
+    const options = {
+      filename: `${this.state.pdfName}_portfolio.pdf`,
+      html2canvas: { scale: 2, logging: true, letterRendering: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+    await html2pdf().from(element).set(options).save();
   }
 
   handleEditClick() {
@@ -64,7 +60,7 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   render() {
     const { portfolio } = this.context;
     const { about, skills, projects, contact } = { ...portfolio };
-    const { isPdfGenerating } = this.state;
+    this.setState({ pdfName: about?.name || "" });
 
     return (
       <Box
@@ -235,39 +231,40 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
         </Card>
 
         {/* Action Buttons */}
-        {!isPdfGenerating && (
-          <CardActions sx={{ justifyContent: "flex-end" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.handleDownloadClick}
-              sx={{
-                mr: 2,
-                fontWeight: "bold",
-                borderRadius: "20px",
-                boxShadow: 2,
-                "&:hover": { bgcolor: "primary.light" },
-              }}
-              startIcon={<Download />}
-            >
-              Download PDF
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={this.handleEditClick}
-              sx={{
-                fontWeight: "bold",
-                borderRadius: "20px",
-                boxShadow: 2,
-                "&:hover": { bgcolor: "secondary.light" },
-              }}
-              startIcon={<Edit />}
-            >
-              Edit Portfolio
-            </Button>
-          </CardActions>
-        )}
+        <CardActions
+          sx={{ justifyContent: "flex-end" }}
+          data-html2canvas-ignore
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.handleDownloadClick}
+            sx={{
+              mr: 2,
+              fontWeight: "bold",
+              borderRadius: "20px",
+              boxShadow: 2,
+              "&:hover": { bgcolor: "primary.light" },
+            }}
+            startIcon={<Download />}
+          >
+            Download PDF
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={this.handleEditClick}
+            sx={{
+              fontWeight: "bold",
+              borderRadius: "20px",
+              boxShadow: 2,
+              "&:hover": { bgcolor: "secondary.light" },
+            }}
+            startIcon={<Edit />}
+          >
+            Edit Portfolio
+          </Button>
+        </CardActions>
       </Box>
     );
   }
