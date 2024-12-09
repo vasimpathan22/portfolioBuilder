@@ -56,6 +56,8 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     this.handleClearForm = this.handleClearForm.bind(this);
     this.validateFieldsBeforeSubmitting =
       this.validateFieldsBeforeSubmitting.bind(this);
+    this.handleSocialPlatformNameChange =
+      this.handleSocialPlatformNameChange.bind(this);
   }
 
   validateFieldsBeforeSubmitting(): boolean {
@@ -180,6 +182,9 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
   }
 
   handleSocialLinkAdd() {
+    const defaultPlatformName = `newPlatform_${Date.now()
+      .toString()
+      .substring(6)}`;
     this.setState((prevState) => ({
       formData: {
         ...prevState.formData,
@@ -187,7 +192,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
           ...prevState.formData.contact,
           socials: {
             ...prevState.formData.contact.socials,
-            newPlatform: "",
+            [defaultPlatformName]: "",
           },
         },
       },
@@ -204,6 +209,28 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
           contact: {
             ...prevState.formData.contact,
             socials: updatedSocials,
+          },
+        },
+      };
+    });
+  }
+
+  handleSocialPlatformNameChange(oldPlatform: string, newPlatform: string) {
+    this.setState((prevState) => {
+      const socials = { ...prevState.formData.contact.socials };
+
+      if (socials[newPlatform]) {
+        console.error("Platform already exists");
+        return null;
+      }
+      socials[newPlatform] = socials[oldPlatform];
+      delete socials[oldPlatform];
+      return {
+        formData: {
+          ...prevState.formData,
+          contact: {
+            ...prevState.formData.contact,
+            socials: socials,
           },
         },
       };
@@ -437,35 +464,49 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 Social Links
               </Typography>
               {Object.entries(formData.contact.socials).map(
-                ([platform, link], index) => (
-                  <Box key={index} sx={{ display: "flex", mb: 2 }}>
-                    <TextField
-                      fullWidth
-                      label="Platform"
-                      value={platform}
-                      InputProps={{ readOnly: true }}
-                    />
-                    <TextField
-                      fullWidth
-                      sx={{ ml: 2 }}
-                      label="Link"
-                      type="url"
-                      required
-                      value={link}
-                      onChange={(e) =>
-                        this.handleSocialLinkChange(platform, e.target.value)
-                      }
-                      error={!!validationErrors[`${platform}_link`]}
-                      helperText={validationErrors[`${platform}_link`]}
-                    />
-                    {/* <IconButton
-                      color="error"
-                      onClick={() => this.handleSocialLinkRemove(platform)}
-                    >
-                      <Delete />
-                    </IconButton> */}
-                  </Box>
-                )
+                ([platform, link], index) => {
+                  const mandatoryPlatform =
+                    platform.toLowerCase() === "github" ||
+                    platform.toLowerCase() === "linkedin";
+                  return (
+                    <Box key={index} sx={{ display: "flex", mb: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="Platform"
+                        value={platform}
+                        InputProps={{ readOnly: mandatoryPlatform }}
+                        onChange={(e) =>
+                          !mandatoryPlatform &&
+                          this.handleSocialPlatformNameChange(
+                            platform,
+                            e.target.value
+                          )
+                        }
+                      />
+                      <TextField
+                        fullWidth
+                        sx={{ ml: 2 }}
+                        label="Link"
+                        type="url"
+                        required
+                        value={link}
+                        onChange={(e) =>
+                          this.handleSocialLinkChange(platform, e.target.value)
+                        }
+                        error={!!validationErrors[`${platform}_link`]}
+                        helperText={validationErrors[`${platform}_link`]}
+                      />
+                      {!mandatoryPlatform && (
+                        <IconButton
+                          color="error"
+                          onClick={() => this.handleSocialLinkRemove(platform)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      )}
+                    </Box>
+                  );
+                }
               )}
               <Button
                 variant="outlined"
