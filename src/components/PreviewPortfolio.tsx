@@ -15,7 +15,17 @@ import {
   CardActions,
 } from "@mui/material";
 import { NavigateFunction, Location } from "react-router-dom";
-import { GitHub, LinkedIn, Download, Edit } from "@mui/icons-material";
+import {
+  GitHub,
+  LinkedIn,
+  Download,
+  Edit,
+  Language,
+  Twitter,
+  Facebook,
+  Instagram,
+  YouTube,
+} from "@mui/icons-material";
 import html2pdf from "html2pdf.js";
 
 type PreviewPortfolioProps = {
@@ -65,6 +75,14 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   render() {
     const { portfolio } = this.context;
     const { about, skills, projects, contact } = { ...portfolio };
+    const platformIcons = {
+      github: <GitHub />,
+      linkedin: <LinkedIn />,
+      twitter: <Twitter />,
+      facebook: <Facebook />,
+      instagram: <Instagram />,
+      youtube: <YouTube />,
+    };
 
     return (
       <Box
@@ -214,11 +232,9 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
                       rel="noopener noreferrer"
                       size="small"
                       startIcon={
-                        platform.toLowerCase() === "github" ? (
-                          <GitHub />
-                        ) : (
-                          <LinkedIn />
-                        )
+                        platformIcons[
+                          platform.toLowerCase() as keyof typeof platformIcons
+                        ] || <Language />
                       }
                       sx={{
                         textTransform: "capitalize",
