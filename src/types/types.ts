@@ -16,6 +16,13 @@ interface Socials {
   [key: string]: string;
 }
 
+interface Experience {
+  jobName: string;
+  jobDuration: string;
+  jobRole: string;
+  jobDescription: string;
+}
+
 interface Contact {
   email: string;
   phone: string;
@@ -27,4 +34,5 @@ export interface Portfolio {
   skills: string[];
   projects: Project[];
   contact: Contact;
+  experiences?: Experience[];
 }

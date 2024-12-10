@@ -58,6 +58,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
       this.validateFieldsBeforeSubmitting.bind(this);
     this.handleSocialPlatformNameChange =
       this.handleSocialPlatformNameChange.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
   }
 
   validateFieldsBeforeSubmitting(): boolean {
@@ -252,6 +253,47 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }
   }
 
+  handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+    const errors: ValidationErrors = {};
+
+    if (name === "name" && !value) {
+      errors["name"] = "Name is required.";
+    } else if (name === "description" && !value) {
+      errors["description"] = "Description is required.";
+    } else if (name === "email") {
+      if (!value) {
+        errors["email"] = "Email is required.";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        errors["email"] = "Invalid email format.";
+      }
+    } else if (name === "phone") {
+      if (!value) {
+        errors["phone"] = "Phone number is required.";
+      } else if (!/^\d{10}$/.test(value)) {
+        errors["phone"] = "Invalid phone number format.";
+      }
+    } else if (name.includes("skill")) {
+      if (!value) {
+        errors[name] = `${name} is required.`;
+      }
+    } else if (name.includes("project")) {
+      if (!value) {
+        errors[name] = `Link for ${name} is requiured`;
+      } else if (!/^https?:\/\/.+$/.test(value)) {
+        errors[name] = `Link for ${name} is invalid`;
+      }
+    } else if (name.includes("link")) {
+      if (!value) {
+        errors[name] = `${name} is required.`;
+      } else if (!/^https?:\/\/.+$/.test(value)) {
+        errors[name] = `${name} is invalid.`;
+      }
+    }
+
+    this.setState({ validationErrors: errors });
+  }
+
   render() {
     const { formData, validationErrors } = this.state;
     const isUserCreatingPortfolio = this.props.location?.pathname === "/create";
@@ -271,10 +313,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
         <Typography variant="h4" gutterBottom>
           {isUserCreatingPortfolio ? "Create Portfolio" : "Edit Portfolio"}
         </Typography>
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          onBlur={this.validateFieldsBeforeSubmitting}
-        >
+        <form onSubmit={(e) => e.preventDefault()}>
           {/* About Section */}
           <Card sx={{ mb: 4 }}>
             <CardContent>
@@ -285,10 +324,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 fullWidth
                 margin="normal"
                 label="Name"
+                name="name"
                 value={formData.about?.name || ""}
                 onChange={(e) =>
                   this.handleInputChange("about", "name", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["name"]}
                 helperText={validationErrors["name"]}
               />
@@ -296,6 +337,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 fullWidth
                 margin="normal"
                 label="Tagline"
+                name="tagline"
                 value={formData.about?.tagline || ""}
                 onChange={(e) =>
                   this.handleInputChange("about", "tagline", e.target.value)
@@ -307,10 +349,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 multiline
                 rows={4}
                 label="Description"
+                name="description"
                 value={formData.about?.description || ""}
                 onChange={(e) =>
                   this.handleInputChange("about", "description", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["description"]}
                 helperText={validationErrors["description"]}
               />
@@ -328,10 +372,14 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                   <TextField
                     fullWidth
                     label={`Skill ${index + 1}`}
+                    name={`skill${index + 1}`}
                     value={skill}
                     onChange={(e) =>
                       this.handleArrayChange("skills", index, e.target.value)
                     }
+                    onBlur={this.handleBlur}
+                    helperText={validationErrors[`skill${index + 1}`]}
+                    error={!!validationErrors[`skill${index + 1}`]}
                   />
                   <IconButton
                     sx={{ ml: 1 }}
@@ -392,6 +440,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                     label="Project Link"
                     type="url"
                     required
+                    name={`project${index + 1}`}
                     value={project.link}
                     onChange={(e) =>
                       this.handleArrayChange("projects", index, {
@@ -399,10 +448,9 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                         link: e.target.value,
                       })
                     }
-                    error={!!validationErrors[`projects_${index}_link`]}
-                    helperText={
-                      validationErrors[`projects_${index}_link`] || ""
-                    }
+                    onBlur={this.handleBlur}
+                    error={!!validationErrors[`project${index + 1}`]}
+                    helperText={validationErrors[`project${index + 1}`] || ""}
                   />
                   <IconButton
                     color="error"
@@ -440,10 +488,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 label="Email"
                 type="email"
                 required
+                name="email"
                 value={formData.contact.email || ""}
                 onChange={(e) =>
                   this.handleInputChange("contact", "email", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["email"]}
                 helperText={validationErrors["email"]}
               />
@@ -453,10 +503,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 label="Phone"
                 type="tel"
                 required
+                name="phone"
                 value={formData.contact.phone || ""}
                 onChange={(e) =>
                   this.handleInputChange("contact", "phone", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["phone"]}
                 helperText={validationErrors["phone"]}
               />
@@ -489,10 +541,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                         label="Link"
                         type="url"
                         required
+                        name={`${platform}_link`}
                         value={link}
                         onChange={(e) =>
                           this.handleSocialLinkChange(platform, e.target.value)
                         }
+                        onBlur={this.handleBlur}
                         error={!!validationErrors[`${platform}_link`]}
                         helperText={validationErrors[`${platform}_link`]}
                       />

@@ -27,6 +27,8 @@ import {
   YouTube,
 } from "@mui/icons-material";
 import html2pdf from "html2pdf.js";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Capacitor } from "@capacitor/core";
 
 type PreviewPortfolioProps = {
   navigate?: NavigateFunction;
@@ -65,7 +67,31 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
       html2canvas: { scale: 2, logging: true, letterRendering: true },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     };
-    await html2pdf().from(element).set(options).save();
+    const platform = Capacitor.getPlatform();
+
+    if (platform === "web") {
+      await html2pdf().from(element).set(options).save();
+      return;
+    }
+    const pdf = await html2pdf()
+      .from(element)
+      .set(options)
+      .outputPdf("datauristring");
+    await this.savePDFOnAndroid(pdf, options.filename);
+  }
+
+  async savePDFOnAndroid(pdfDataUri: string, pdfname: string) {
+    try {
+      const pdfBase64Data = pdfDataUri.split(",")[1];
+      await Filesystem.writeFile({
+        path: pdfname,
+        data: pdfBase64Data,
+        directory: Directory.Documents,
+      });
+      alert("PDF saved to your device in Documents directory!");
+    } catch (error) {
+      console.log("Error saving PDF to device:", error);
+    }
   }
 
   handleEditClick() {
@@ -222,7 +248,7 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
             </Typography>
             <Box mt={2}>
               <Typography variant="subtitle1">Socials:</Typography>
-              <Box display="flex" gap={2} mt={1}>
+              <Box display="flex" gap={2} mt={1} flexWrap="wrap">
                 {Object.entries(contact?.socials ?? {}).map(
                   ([platform, link], index) => (
                     <Button
