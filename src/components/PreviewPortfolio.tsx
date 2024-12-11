@@ -100,7 +100,7 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
 
   render() {
     const { portfolio } = this.context;
-    const { about, skills, projects, contact } = { ...portfolio };
+    const { about, skills, projects, contact, experiences } = { ...portfolio };
     const platformIcons = {
       github: <GitHub />,
       linkedin: <LinkedIn />,
@@ -222,6 +222,62 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
                       >
                         View Project
                       </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+
+        {/* Experiences Section */}
+        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+          <CardHeader
+            title="Experiences"
+            titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
+          />
+          <CardContent>
+            <Grid container spacing={2}>
+              {experiences?.map((experience, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      height: "100%",
+                      transition: "transform 0.2s",
+                      "&:hover": { transform: "scale(1.02)" },
+                    }}
+                  >
+                    <CardContent>
+                      <Grid
+                        container
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: "bold", textAlign: "left" }}
+                        >
+                          {experience.companyName}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {experience.jobDuration}
+                        </Typography>
+                      </Grid>
+                      <Typography
+                        variant="body2"
+                        color="textPrimary"
+                        sx={{ mt: 1 }}
+                      >
+                        {experience.jobRole}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        sx={{ mt: 1 }}
+                      >
+                        {experience.jobDescription}
+                      </Typography>
                     </CardContent>
                   </Card>
                 </Grid>

@@ -5,7 +5,7 @@ import {
   portfolioContextType,
 } from "../context/PortfolioContext";
 import portfolioService from "../service/portfolioService";
-import { Portfolio, Project } from "../types/types";
+import { Experience, Portfolio, Project } from "../types/types";
 import {
   Box,
   TextField,
@@ -97,6 +97,18 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
       }
     });
 
+    formData.experiences.forEach((experience, index) => {
+      if (!experience.companyName) {
+        errors[`companyName${index + 1}`] = "Company name is required.";
+      } else if (!experience.jobRole) {
+        errors[`jobRole${index + 1}`] = "Job role is required.";
+      } else if (!experience.jobDuration) {
+        errors[`jobDuration${index + 1}`] = "Job duration is required.";
+      } else if (!experience.jobDescription) {
+        errors[`jobDescription${index + 1}`] = "Job description is required.";
+      }
+    });
+
     Object.entries(formData.contact.socials).forEach(([platform, link]) => {
       if (!link) {
         errors[`${platform}_link`] = `Link for ${platform} is required.`;
@@ -125,10 +137,14 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayChange<K extends "skills" | "projects">(
+  handleArrayChange<K extends "skills" | "projects" | "experiences">(
     section: K,
     index: number,
-    value: K extends "skills" ? string : Project
+    value: K extends "skills"
+      ? string
+      : K extends "projects"
+      ? Project
+      : Experience
   ) {
     const updatedArray = [...this.state.formData[section]];
     updatedArray[index] = value;
@@ -140,9 +156,13 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayAdd<K extends "skills" | "projects">(
+  handleArrayAdd<K extends "skills" | "projects" | "experiences">(
     section: K,
-    elementToAdd: K extends "skills" ? string : Project
+    elementToAdd: K extends "skills"
+      ? string
+      : K extends "projects"
+      ? Project
+      : Experience
   ) {
     this.setState((prevState) => ({
       formData: {
@@ -152,7 +172,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayRemove<K extends "skills" | "projects">(
+  handleArrayRemove<K extends "skills" | "projects" | "experiences">(
     section: K,
     indexToRemove: number
   ) {
@@ -288,6 +308,22 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
         errors[name] = `${name} is required.`;
       } else if (!/^https?:\/\/.+$/.test(value)) {
         errors[name] = `${name} is invalid.`;
+      }
+    } else if (name.includes("companyName")) {
+      if (!value) {
+        errors[name] = "Company name is required.";
+      }
+    } else if (name.includes("jobDuration")) {
+      if (!value) {
+        errors[name] = "Job duration is required.";
+      }
+    } else if (name.includes("jobDescription")) {
+      if (!value) {
+        errors[name] = "Job description is required.";
+      }
+    } else if (name.includes("jobRole")) {
+      if (!value) {
+        errors[name] = "Job role is required.";
       }
     }
 
@@ -472,6 +508,113 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 }
               >
                 Add Project
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Experiences Section */}
+          <Card sx={{ mb: 4 }}>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                Experiences
+              </Typography>
+              {formData?.experiences?.map((experience, index) => (
+                <Box key={index} sx={{ mb: 3 }}>
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Company Name"
+                    required
+                    value={experience.companyName}
+                    name={`companyName${index + 1}`}
+                    onChange={(e) =>
+                      this.handleArrayChange("experiences", index, {
+                        ...experience,
+                        companyName: e.target.value,
+                      })
+                    }
+                    onBlur={this.handleBlur}
+                    error={!!validationErrors[`companyName${index + 1}`]}
+                    helperText={
+                      validationErrors[`companyName${index + 1}`] || ""
+                    }
+                  />
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Job Duration"
+                    required
+                    value={experience.jobDuration}
+                    name={`jobDuration${index + 1}`}
+                    onChange={(e) =>
+                      this.handleArrayChange("experiences", index, {
+                        ...experience,
+                        jobDuration: e.target.value,
+                      })
+                    }
+                    onBlur={this.handleBlur}
+                    error={!!validationErrors[`jobDuration${index + 1}`]}
+                    helperText={
+                      validationErrors[`jobDuration${index + 1}`] || ""
+                    }
+                  />
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Job Role"
+                    required
+                    name={`jobRole${index + 1}`}
+                    value={experience.jobRole}
+                    onChange={(e) =>
+                      this.handleArrayChange("experiences", index, {
+                        ...experience,
+                        jobRole: e.target.value,
+                      })
+                    }
+                    onBlur={this.handleBlur}
+                    error={!!validationErrors[`jobRole${index + 1}`]}
+                    helperText={validationErrors[`jobRole${index + 1}`] || ""}
+                  />
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    multiline
+                    rows={3}
+                    name={`jobDescription${index + 1}`}
+                    label="Job Description"
+                    required
+                    value={experience.jobDescription}
+                    onChange={(e) =>
+                      this.handleArrayChange("experiences", index, {
+                        ...experience,
+                        jobDescription: e.target.value,
+                      })
+                    }
+                    onBlur={this.handleBlur}
+                    error={!!validationErrors[`jobDescription${index + 1}`]}
+                    helperText={validationErrors[`jobDescription${index + 1}`]}
+                  />
+                  <IconButton
+                    color="error"
+                    onClick={() => this.handleArrayRemove("experiences", index)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Box>
+              ))}
+              <Button
+                variant="outlined"
+                startIcon={<Add />}
+                onClick={() =>
+                  this.handleArrayAdd("experiences", {
+                    companyName: "",
+                    jobDuration: "",
+                    jobRole: "",
+                    jobDescription: "",
+                  })
+                }
+              >
+                Add Experience
               </Button>
             </CardContent>
           </Card>

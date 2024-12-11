@@ -12,6 +12,7 @@ class PortfolioService {
       about: { description: "", name: "", tagline: "" },
       skills: [],
       projects: [],
+      experiences: [],
       contact: {
         email: "",
         phone: "",
@@ -33,6 +34,7 @@ class PortfolioService {
       about: { description: "", name: "", tagline: "" },
       skills: [],
       projects: [],
+      experiences: [],
       contact: {
         email: "",
         phone: "",
