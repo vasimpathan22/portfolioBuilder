@@ -36,7 +36,3 @@ export interface Portfolio {
   contact: Contact;
   experiences: Experience[];
 }
-
-interface Portfolios {
-  portfolios: Portfolio[];
-}

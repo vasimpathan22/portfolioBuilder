@@ -5,104 +5,142 @@ import {
   portfolioContextType,
 } from "../context/PortfolioContext";
 import { Location, NavigateFunction } from "react-router-dom";
-import {
-  Box,
-  Button,
-  Typography,
-  Card,
-  CardContent,
-  CardActions,
-  Container,
-} from "@mui/material";
+import portfolioService from "../service/portfolioService";
+import { Box, Card, Typography, Button } from "@mui/material";
+import { Portfolio } from "../types/types";
 
 type HomeProps = {
   navigate?: NavigateFunction;
   location?: Location;
 };
 
-class Home extends Component<HomeProps> {
+type HomeStateProps = {
+  availablePortfolios: Portfolio[];
+};
+
+class Home extends Component<HomeProps, HomeStateProps> {
   static contextType = PortfolioContext;
   declare context: portfolioContextType;
-
   constructor(props: HomeProps) {
     super(props);
-    this.handleViewPortfolio = this.handleViewPortfolio.bind(this);
+
+    this.state = {
+      availablePortfolios: portfolioService.getAllPortfolios(),
+    };
+
     this.handleCreatePortfolio = this.handleCreatePortfolio.bind(this);
+    this.handleViewPortfolio = this.handleViewPortfolio.bind(this);
+    this.handleEditPortfolio = this.handleEditPortfolio.bind(this);
+    this.handleDeletePortfolio = this.handleDeletePortfolio.bind(this);
   }
 
-  handleViewPortfolio = () => {
+  handleViewPortfolio(portfolio: Portfolio, index: number) {
+    localStorage.setItem("currentPortfolioIndex", index.toString());
+    localStorage.setItem("portfolio", JSON.stringify(portfolio));
     this.props.navigate?.("/preview");
-  };
+  }
+
+  handleEditPortfolio(portfolio: Portfolio, index: number) {
+    localStorage.setItem("currentPortfolioIndex", index.toString());
+    localStorage.setItem("portfolio", JSON.stringify(portfolio));
+    this.props.navigate?.("/edit");
+  }
 
   handleCreatePortfolio = () => {
+    localStorage.removeItem("portfolio");
+    localStorage.removeItem("currentPortfolioIndex");
     this.props.navigate?.("/create");
   };
 
-  render() {
-    const { portfolio } = this.context;
-    const isPortfolioCreatedAlready = portfolio?.about?.name;
+  handleDeletePortfolio(index: number) {
+    const updatedPortfolios = [...this.state.availablePortfolios];
+    updatedPortfolios.splice(index, 1);
+    this.setState({ availablePortfolios: updatedPortfolios });
+    localStorage.setItem("portfolios", JSON.stringify(updatedPortfolios));
+    localStorage.removeItem("currentPortfolioIndex");
+    localStorage.removeItem("portfolio");
+    console.log(`Deleted the portfolio at index ${index}`);
+  }
 
+  render() {
+    const { availablePortfolios } = this.state;
     return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "grey.100",
-          p: 2,
-        }}
-      >
-        <Container maxWidth="sm">
-          <Card elevation={5} sx={{ borderRadius: 3 }}>
-            <CardContent>
-              <Typography
-                variant="h4"
-                component="h1"
+      <Box sx={{ p: 3, backgroundColor: "#f9f9f9" }}>
+        <Typography
+          variant="h4"
+          component="div"
+          sx={{ textAlign: "center", mb: 4 }}
+        >
+          Portfolio Builder
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flexWrap: "wrap",
+            gap: 2,
+            mb: 3,
+          }}
+        >
+          <Typography variant="h6" component="div">
+            Available Portfolios
+          </Typography>
+          {availablePortfolios.length > 0 ? (
+            availablePortfolios.map((portfolio, index) => (
+              <Card
+                key={index}
                 sx={{
-                  fontWeight: "bold",
-                  textAlign: "center",
-                  mb: 3,
-                  color: "black",
+                  borderRadius: 2,
+                  boxShadow: 3,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  alignItems: "center",
+                  p: 2,
+                  transition: "transform 0.2s",
+                  "&:hover": { transform: "scale(1.02)" },
                 }}
               >
-                Welcome to Portfolio Builder
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  textAlign: "center",
-                  mb: 4,
-                  color: "text.secondary",
-                }}
-              >
-                {isPortfolioCreatedAlready
-                  ? "Your portfolio is ready to view."
-                  : "Create a stunning portfolio in minutes!"}
-              </Typography>
-            </CardContent>
-            <CardActions sx={{ justifyContent: "center", gap: 2, pb: 2 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={
-                  isPortfolioCreatedAlready
-                    ? this.handleViewPortfolio
-                    : this.handleCreatePortfolio
-                }
-                sx={{
-                  px: 4,
-                  fontWeight: "bold",
-                }}
-              >
-                {isPortfolioCreatedAlready
-                  ? "View Portfolio"
-                  : "Create Portfolio"}
-              </Button>
-            </CardActions>
-          </Card>
-        </Container>
+                <Typography variant="h6" component="div">
+                  {portfolio.about.name}
+                </Typography>
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => this.handleViewPortfolio(portfolio, index)}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => this.handleEditPortfolio(portfolio, index)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => this.handleDeletePortfolio(index)}
+                  >
+                    Delete
+                  </Button>
+                </Box>
+              </Card>
+            ))
+          ) : (
+            <div>No Portfolios Available</div>
+          )}
+        </Box>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={this.handleCreatePortfolio}
+          sx={{ mt: 4, alignSelf: "center" }}
+        >
+          Create Portfolio
+        </Button>
       </Box>
     );
   }

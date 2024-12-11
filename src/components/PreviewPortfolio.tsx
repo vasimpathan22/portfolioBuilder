@@ -29,6 +29,7 @@ import {
 import html2pdf from "html2pdf.js";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
+import portfolioService from "../service/portfolioService";
 
 type PreviewPortfolioProps = {
   navigate?: NavigateFunction;
@@ -56,8 +57,9 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   }
 
   componentDidMount(): void {
-    const { portfolio } = this.context;
+    const { portfolio, setPortfolio } = this.context;
     this.setState({ pdfName: portfolio?.about?.name || "" });
+    setPortfolio(portfolioService.getLocalStoragePortfolio());
   }
 
   async handleDownloadClick() {
