@@ -242,6 +242,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
 
       if (socials[newPlatform]) {
         console.error("Platform already exists");
+        alert("Platform already exists");
         return null;
       }
       socials[newPlatform] = socials[oldPlatform];
@@ -333,6 +334,21 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
   render() {
     const { formData, validationErrors } = this.state;
     const isUserCreatingPortfolio = this.props.location?.pathname === "/create";
+    const isAddSkillButtonDisable =
+      formData.skills.length > 0 &&
+      !formData.skills[formData.skills.length - 1];
+    const isAddProjectButtonDisable =
+      formData.projects.length > 0 &&
+      !formData.projects[formData.projects.length - 1].link;
+    const isAddExperienceButtonDisable =
+      formData.experiences.length > 0 &&
+      !formData.experiences[formData.experiences.length - 1].jobDescription;
+    const isAddSocialLinkButtonDisable =
+      !formData.contact.socials[
+        Object.keys(formData.contact.socials)[
+          Object.keys(formData.contact.socials).length - 1
+        ]
+      ];
 
     return (
       <Box
@@ -430,6 +446,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 variant="outlined"
                 startIcon={<Add />}
                 onClick={() => this.handleArrayAdd("skills", "")}
+                disabled={isAddSkillButtonDisable}
               >
                 Add Skill
               </Button>
@@ -506,6 +523,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                     link: "",
                   })
                 }
+                disabled={isAddProjectButtonDisable}
               >
                 Add Project
               </Button>
@@ -613,6 +631,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                     jobDescription: "",
                   })
                 }
+                disabled={isAddExperienceButtonDisable}
               >
                 Add Experience
               </Button>
@@ -680,7 +699,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                       />
                       <TextField
                         fullWidth
-                        sx={{ ml: 2 }}
+                        sx={!mandatoryPlatform ? { ml: 2 } : { mr: 5, ml: 2 }}
                         label="Link"
                         type="url"
                         required
@@ -709,6 +728,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 variant="outlined"
                 startIcon={<Add />}
                 onClick={this.handleSocialLinkAdd}
+                disabled={isAddSocialLinkButtonDisable}
               >
                 Add Social Link
               </Button>
