@@ -220,11 +220,12 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
                 {experiences?.map((experience, index) => (
                   <Grid item xs={12} md={6} key={index} mb={2}>
                     <Card
-                      variant="outlined"
+                      variant="elevation"
                       sx={{
                         height: "100%",
-                        transition: "transform 0.2s",
-                        "&:hover": { transform: "scale(1.02)" },
+                        // transition: "transform 0.2s",
+                        // "&:hover": { transform: "scale(1.02)" },
+                        boxShadow: 0.6,
                       }}
                     >
                       <CardContent>
@@ -278,11 +279,12 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
                 {projects?.map((project, index) => (
                   <Grid item xs={12} md={6} key={index} mb={2}>
                     <Card
-                      variant="outlined"
+                      variant="elevation"
                       sx={{
                         height: "100%",
-                        transition: "transform 0.2s",
-                        "&:hover": { transform: "scale(1.02)" },
+                        boxShadow: 0.6,
+                        // transition: "transform 0.2s",
+                        // "&:hover": { transform: "scale(1.02)" },
                       }}
                     >
                       <CardHeader

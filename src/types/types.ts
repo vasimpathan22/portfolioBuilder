@@ -1,3 +1,5 @@
+import moment from "moment";
+
 interface About {
   name: string;
   tagline: string;
@@ -21,6 +23,8 @@ export interface Experience {
   jobDuration: string;
   jobRole: string;
   jobDescription: string;
+  startDate: moment.Moment | null;
+  endDate: moment.Moment | null;
 }
 
 interface Contact {

@@ -18,6 +18,10 @@ import {
 } from "@mui/material";
 import { Add, ArrowBack, Delete } from "@mui/icons-material";
 import { NavigateFunction, Location } from "react-router-dom";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment";
 
 type EditPortfolioProps = {
   navigate?: NavigateFunction;
@@ -341,7 +345,9 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
 
   render() {
     const { formData, validationErrors } = this.state;
-    const isUserCreatingPortfolio = this.props.location?.pathname === "/create";
+    console.log(formData.experiences);
+
+    const isUserCreatingResume = this.props.location?.pathname === "/create";
     const isAddSkillButtonDisable =
       formData.skills.length > 0 &&
       !formData.skills[formData.skills.length - 1];
@@ -378,7 +384,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
           Back
         </Button>
         <Typography variant="h4" gutterBottom>
-          {isUserCreatingPortfolio ? "Create Resume" : "Edit Resume"}
+          {isUserCreatingResume ? "Create Resume" : "Edit Resume"}
         </Typography>
         <form onSubmit={(e) => e.preventDefault()}>
           {/* About Section */}
@@ -546,112 +552,148 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
           </Card>
 
           {/* Experiences Section */}
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Experiences
-              </Typography>
-              {formData?.experiences?.map((experience, index) => (
-                <Box key={index} sx={{ mb: 3 }}>
-                  <TextField
-                    fullWidth
-                    margin="normal"
-                    label="Company Name"
-                    required
-                    value={experience.companyName}
-                    name={`companyName${index + 1}`}
-                    onChange={(e) =>
-                      this.handleArrayChange("experiences", index, {
-                        ...experience,
-                        companyName: e.target.value,
-                      })
-                    }
-                    onBlur={this.handleBlur}
-                    error={!!validationErrors[`companyName${index + 1}`]}
-                    helperText={
-                      validationErrors[`companyName${index + 1}`] || ""
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="normal"
-                    label="Job Duration"
-                    required
-                    value={experience.jobDuration}
-                    name={`jobDuration${index + 1}`}
-                    onChange={(e) =>
-                      this.handleArrayChange("experiences", index, {
-                        ...experience,
-                        jobDuration: e.target.value,
-                      })
-                    }
-                    onBlur={this.handleBlur}
-                    error={!!validationErrors[`jobDuration${index + 1}`]}
-                    helperText={
-                      validationErrors[`jobDuration${index + 1}`] || ""
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="normal"
-                    label="Job Role"
-                    required
-                    name={`jobRole${index + 1}`}
-                    value={experience.jobRole}
-                    onChange={(e) =>
-                      this.handleArrayChange("experiences", index, {
-                        ...experience,
-                        jobRole: e.target.value,
-                      })
-                    }
-                    onBlur={this.handleBlur}
-                    error={!!validationErrors[`jobRole${index + 1}`]}
-                    helperText={validationErrors[`jobRole${index + 1}`] || ""}
-                  />
-                  <TextField
-                    fullWidth
-                    margin="normal"
-                    multiline
-                    rows={3}
-                    name={`jobDescription${index + 1}`}
-                    label="Job Description"
-                    required
-                    value={experience.jobDescription}
-                    onChange={(e) =>
-                      this.handleArrayChange("experiences", index, {
-                        ...experience,
-                        jobDescription: e.target.value,
-                      })
-                    }
-                    onBlur={this.handleBlur}
-                    error={!!validationErrors[`jobDescription${index + 1}`]}
-                    helperText={validationErrors[`jobDescription${index + 1}`]}
-                  />
-                  <IconButton
-                    color="error"
-                    onClick={() => this.handleArrayRemove("experiences", index)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </Box>
-              ))}
-              <Button
-                variant="outlined"
-                startIcon={<Add />}
-                onClick={() =>
-                  this.handleArrayAdd("experiences", {
-                    companyName: "",
-                    jobDuration: "",
-                    jobRole: "",
-                    jobDescription: "",
-                  })
-                }
-                disabled={isAddExperienceButtonDisable}
-              >
-                Add Experience
-              </Button>
-            </CardContent>
-          </Card>
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <Card sx={{ mb: 4 }}>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Experiences
+                </Typography>
+                {formData?.experiences?.map((experience, index) => (
+                  <Box key={index} sx={{ mb: 4 }}>
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      label="Company Name"
+                      required
+                      value={experience.companyName}
+                      name={`companyName${index + 1}`}
+                      onChange={(e) =>
+                        this.handleArrayChange("experiences", index, {
+                          ...experience,
+                          companyName: e.target.value,
+                        })
+                      }
+                      onBlur={this.handleBlur}
+                      error={!!validationErrors[`companyName${index + 1}`]}
+                      helperText={
+                        validationErrors[`companyName${index + 1}`] || ""
+                      }
+                    />
+                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                      <TextField
+                        margin="normal"
+                        label="Job Duration"
+                        disabled
+                        required
+                        color="primary"
+                        sx={{ mb: 2 }}
+                      />
+                      <DatePicker
+                        views={["year", "month"]}
+                        label="From"
+                        value={moment(experience.startDate)}
+                        onChange={(newValue) =>
+                          this.handleArrayChange("experiences", index, {
+                            ...experience,
+                            startDate: newValue,
+                            jobDuration: `${moment(newValue).format(
+                              "MMM YYYY"
+                            )}- ${moment(experience.endDate).format(
+                              "MMM YYYY"
+                            )}`,
+                          })
+                        }
+                        slots={{
+                          textField: (props) => <TextField {...props} />,
+                        }}
+                      />
+                      <DatePicker
+                        views={["year", "month"]}
+                        label="To"
+                        value={moment(experience.endDate)}
+                        onChange={(newValue) =>
+                          this.handleArrayChange("experiences", index, {
+                            ...experience,
+                            endDate: newValue,
+                            jobDuration: `${moment(experience.startDate).format(
+                              "MMM YYYY"
+                            )} - ${moment(newValue).format("MMM YYYY")}`,
+                          })
+                        }
+                        slots={{
+                          textField: (props) => <TextField {...props} />,
+                        }}
+                      />
+                    </Box>
+
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      label="Job Role"
+                      required
+                      name={`jobRole${index + 1}`}
+                      value={experience.jobRole}
+                      onChange={(e) =>
+                        this.handleArrayChange("experiences", index, {
+                          ...experience,
+                          jobRole: e.target.value,
+                        })
+                      }
+                      onBlur={this.handleBlur}
+                      error={!!validationErrors[`jobRole${index + 1}`]}
+                      helperText={validationErrors[`jobRole${index + 1}`] || ""}
+                    />
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      multiline
+                      rows={3}
+                      name={`jobDescription${index + 1}`}
+                      label="Job Description"
+                      required
+                      value={experience.jobDescription}
+                      onChange={(e) =>
+                        this.handleArrayChange("experiences", index, {
+                          ...experience,
+                          jobDescription: e.target.value,
+                        })
+                      }
+                      onBlur={this.handleBlur}
+                      error={!!validationErrors[`jobDescription${index + 1}`]}
+                      helperText={
+                        validationErrors[`jobDescription${index + 1}`]
+                      }
+                    />
+                    <IconButton
+                      color="error"
+                      onClick={() =>
+                        this.handleArrayRemove("experiences", index)
+                      }
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                ))}
+                <Button
+                  variant="outlined"
+                  startIcon={<Add />}
+                  onClick={() =>
+                    this.handleArrayAdd("experiences", {
+                      companyName: "",
+                      jobDuration: "",
+                      jobRole: "",
+                      jobDescription: "",
+                      startDate: null,
+                      endDate: null,
+                    })
+                  }
+                  disabled={isAddExperienceButtonDisable}
+                >
+                  Add Experience
+                </Button>
+              </CardContent>
+            </Card>
+          </LocalizationProvider>
 
           {/* Contact Section */}
           <Card sx={{ mb: 4 }}>
@@ -765,7 +807,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
               color="primary"
               onClick={this.handleSubmit}
             >
-              {isUserCreatingPortfolio ? "Create Portfolio" : "Save Changes"}
+              {isUserCreatingResume ? "Create Resume" : "Save Changes"}
             </Button>
           </CardActions>
         </form>
