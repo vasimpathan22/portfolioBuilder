@@ -6,8 +6,16 @@ import {
 } from "../context/PortfolioContext";
 import { Location, NavigateFunction } from "react-router-dom";
 import portfolioService from "../service/portfolioService";
-import { Box, Card, Typography, Button } from "@mui/material";
+import {
+  Box,
+  Card,
+  Typography,
+  Button,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import { Portfolio } from "../types/types";
+import { Delete, Edit, RemoveRedEye } from "@mui/icons-material";
 
 type HomeProps = {
   navigate?: NavigateFunction;
@@ -43,7 +51,11 @@ class Home extends Component<HomeProps, HomeStateProps> {
   handleEditPortfolio(portfolio: Portfolio, index: number) {
     localStorage.setItem("currentPortfolioIndex", index.toString());
     localStorage.setItem("portfolio", JSON.stringify(portfolio));
-    this.props.navigate?.("/edit");
+    console.log(this.props.location?.pathname);
+
+    this.props.navigate?.("/edit", {
+      state: { from: "/" },
+    });
   }
 
   handleCreatePortfolio = () => {
@@ -78,6 +90,7 @@ class Home extends Component<HomeProps, HomeStateProps> {
             display: "flex",
             flexDirection: "column",
             flexWrap: "wrap",
+            alignItems: "center",
             gap: 2,
             mb: 3,
           }}
@@ -94,53 +107,79 @@ class Home extends Component<HomeProps, HomeStateProps> {
                   boxShadow: 3,
                   display: "flex",
                   justifyContent: "space-between",
-                  width: "100%",
                   alignItems: "center",
                   p: 2,
+                  width: {
+                    xs: "90%", // 90% width for extra small devices
+                    sm: "75%", // 75% width for small devices
+                    md: "50%", // 50% width for medium and larger devices
+                  },
                   transition: "transform 0.2s",
-                  "&:hover": { transform: "scale(1.02)" },
+                  "&:hover": { transform: "scale(1.01)" },
+                  flexDirection: {
+                    xs: "column", // Stack content on small screens
+                    sm: "row", // Row layout for larger screens
+                  },
+                  textAlign: { xs: "center", sm: "left" }, // Center-align text on small screens
+                  gap: 2,
                 }}
               >
-                <Typography variant="h6" component="div">
+                <Typography variant="h6" component="div" sx={{ flex: 1 }}>
                   {portfolio.about.name}
                 </Typography>
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => this.handleViewPortfolio(portfolio, index)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => this.handleEditPortfolio(portfolio, index)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => this.handleDeletePortfolio(index)}
-                  >
-                    Delete
-                  </Button>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    justifyContent: {
+                      xs: "center", // Center align buttons on mobile
+                      sm: "flex-start", // Left-align buttons on larger screens
+                    },
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Tooltip title="View">
+                    <IconButton
+                      color="info"
+                      onClick={() => this.handleViewPortfolio(portfolio, index)}
+                      aria-label="view"
+                    >
+                      <RemoveRedEye />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Edit">
+                    <IconButton
+                      color="inherit"
+                      onClick={() => this.handleEditPortfolio(portfolio, index)}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      color="error"
+                      onClick={() => this.handleDeletePortfolio(index)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </Card>
             ))
           ) : (
-            <div>No Resumes Available</div>
+            <Typography variant="body1" sx={{ mt: 2, textAlign: "center" }}>
+              No Resumes Available
+            </Typography>
           )}
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={this.handleCreatePortfolio}
+            sx={{ mt: 4, width: { xs: "90%", sm: "auto" } }} // Full width on mobile
+          >
+            Create Resume
+          </Button>
         </Box>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={this.handleCreatePortfolio}
-          sx={{ mt: 4, alignSelf: "center" }}
-        >
-          Create Resume
-        </Button>
       </Box>
     );
   }

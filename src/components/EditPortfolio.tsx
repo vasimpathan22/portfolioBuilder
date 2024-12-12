@@ -339,13 +339,17 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
   }
 
   handleGoBack() {
-    const { navigate } = this.props;
+    const { navigate, location } = this.props;
+
+    if (location?.state?.from === "/") {
+      navigate?.("/");
+      return;
+    }
     navigate?.("/preview");
   }
 
   render() {
     const { formData, validationErrors } = this.state;
-    console.log(formData.experiences);
 
     const isUserCreatingResume = this.props.location?.pathname === "/create";
     const isAddSkillButtonDisable =
@@ -583,15 +587,22 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                       <TextField
                         margin="normal"
                         label="Job Duration"
-                        disabled
+                        name={`jobDuration${index + 1}`}
+                        // disabled
                         required
                         color="primary"
                         sx={{ mb: 2 }}
+                        onBlur={this.handleBlur}
+                        error={!!validationErrors[`jobDuration${index + 1}`]}
+                        helperText={
+                          validationErrors[`jobDuration${index + 1}`] || ""
+                        }
                       />
                       <DatePicker
                         views={["year", "month"]}
                         label="From"
                         value={moment(experience.startDate)}
+                        maxDate={moment(experience.endDate)}
                         onChange={(newValue) =>
                           this.handleArrayChange("experiences", index, {
                             ...experience,
@@ -611,6 +622,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                         views={["year", "month"]}
                         label="To"
                         value={moment(experience.endDate)}
+                        minDate={moment(experience.startDate)}
                         onChange={(newValue) =>
                           this.handleArrayChange("experiences", index, {
                             ...experience,

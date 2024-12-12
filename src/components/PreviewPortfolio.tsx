@@ -37,11 +37,7 @@ type PreviewPortfolioProps = {
   location?: Location;
 };
 
-type stateProps = {
-  pdfName: string;
-};
-
-class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
+class PreviewPortfolio extends Component<PreviewPortfolioProps> {
   static contextType = PortfolioContext;
   declare context: portfolioContextType;
 
@@ -49,9 +45,6 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
 
   constructor(props: PreviewPortfolioProps) {
     super(props);
-    this.state = {
-      pdfName: "",
-    };
     this.portfolioRef = React.createRef();
     this.handleDownloadClick = this.handleDownloadClick.bind(this);
     this.handleEditClick = this.handleEditClick.bind(this);
@@ -59,21 +52,23 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
   }
 
   componentDidMount(): void {
-    const { portfolio, setPortfolio } = this.context;
-    this.setState({ pdfName: portfolio?.about?.name || "" });
+    const { setPortfolio } = this.context;
     setPortfolio(portfolioService.getLocalStoragePortfolio());
   }
 
   async handleDownloadClick() {
+    const { portfolio } = this.context;
+    const pdfname = `${portfolio?.about.name}_portfolio.pdf`;
     const element = document.querySelector("#content-download");
     const options = {
-      filename: `${this.state.pdfName}_portfolio.pdf`,
+      filename: pdfname,
       html2canvas: { scale: 2, logging: true, letterRendering: true },
       jsPDF: {
         unit: "mm",
         format: "a4",
         orientation: "portrait",
       },
+      pagebreak: { mode: "css", after: ".section_wise_div",avoid:"#row" },
     };
     const platform = Capacitor.getPlatform();
 
