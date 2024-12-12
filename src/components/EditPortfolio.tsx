@@ -16,7 +16,7 @@ import {
   CardActions,
   IconButton,
 } from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
+import { Add, ArrowBack, Delete } from "@mui/icons-material";
 import { NavigateFunction, Location } from "react-router-dom";
 
 type EditPortfolioProps = {
@@ -59,6 +59,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     this.handleSocialPlatformNameChange =
       this.handleSocialPlatformNameChange.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleGoBack = this.handleGoBack.bind(this);
   }
 
   validateFieldsBeforeSubmitting(): boolean {
@@ -85,15 +86,17 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
       errors["phone"] = "Phone number must be 10 digits.";
     }
 
+    formData.skills.forEach((skill, index) => {
+      if (!skill) {
+        errors[`skill${index + 1}`] = `Skill ${index + 1} is required.`;
+      }
+    });
+
     formData.projects.forEach((project, index) => {
       if (!project.link) {
-        errors[`projects_${index}_link`] = `Project link for Project ${
-          index + 1
-        } is required.`;
+        errors[`project${index + 1}`] = `Project link is required.`;
       } else if (!/^https?:\/\/.+$/.test(project.link)) {
-        errors[`projects_${index}_link`] = `Invalid URL format for Project ${
-          index + 1
-        }.`;
+        errors[`project${index + 1}`] = `Invalid Project link format.`;
       }
     });
 
@@ -111,9 +114,9 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
 
     Object.entries(formData.contact.socials).forEach(([platform, link]) => {
       if (!link) {
-        errors[`${platform}_link`] = `Link for ${platform} is required.`;
+        errors[`${platform}_link`] = `Link for platform is required.`;
       } else if (!/^https?:\/\/.+$/.test(link)) {
-        errors[`${platform}_link`] = `Invalid URL format for ${platform}.`;
+        errors[`${platform}_link`] = `Invalid URL format for platform.`;
       }
     });
 
@@ -331,6 +334,11 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     this.setState({ validationErrors: errors });
   }
 
+  handleGoBack() {
+    const { navigate } = this.props;
+    navigate?.("/preview");
+  }
+
   render() {
     const { formData, validationErrors } = this.state;
     const isUserCreatingPortfolio = this.props.location?.pathname === "/create";
@@ -362,8 +370,15 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
           mt: 4,
         }}
       >
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={this.handleGoBack}
+          sx={{ mb: 2 }}
+        >
+          Back
+        </Button>
         <Typography variant="h4" gutterBottom>
-          {isUserCreatingPortfolio ? "Create Portfolio" : "Edit Portfolio"}
+          {isUserCreatingPortfolio ? "Create Resume" : "Edit Resume"}
         </Typography>
         <form onSubmit={(e) => e.preventDefault()}>
           {/* About Section */}

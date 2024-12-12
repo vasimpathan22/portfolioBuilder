@@ -71,7 +71,7 @@ class Home extends Component<HomeProps, HomeStateProps> {
           component="div"
           sx={{ textAlign: "center", mb: 4 }}
         >
-          Portfolio Builder
+          Resume Builder
         </Typography>
         <Box
           sx={{
@@ -83,7 +83,7 @@ class Home extends Component<HomeProps, HomeStateProps> {
           }}
         >
           <Typography variant="h6" component="div">
-            Available Portfolios
+            Available Resumes
           </Typography>
           {availablePortfolios.length > 0 ? (
             availablePortfolios.map((portfolio, index) => (
@@ -130,7 +130,7 @@ class Home extends Component<HomeProps, HomeStateProps> {
               </Card>
             ))
           ) : (
-            <div>No Portfolios Available</div>
+            <div>No Resumes Available</div>
           )}
         </Box>
         <Button
@@ -139,7 +139,7 @@ class Home extends Component<HomeProps, HomeStateProps> {
           onClick={this.handleCreatePortfolio}
           sx={{ mt: 4, alignSelf: "center" }}
         >
-          Create Portfolio
+          Create Resume
         </Button>
       </Box>
     );
