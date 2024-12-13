@@ -61,7 +61,7 @@ class Home extends Component<HomeProps, HomeStateProps> {
   handleCreatePortfolio = () => {
     localStorage.removeItem("portfolio");
     localStorage.removeItem("currentPortfolioIndex");
-    this.props.navigate?.("/create");
+    this.props.navigate?.("/create", { state: { from: "/" } });
   };
 
   handleDeletePortfolio(index: number) {
