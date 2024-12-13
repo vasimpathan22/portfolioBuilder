@@ -5,7 +5,7 @@ import {
   portfolioContextType,
 } from "../context/PortfolioContext";
 import portfolioService from "../service/portfolioService";
-import { Portfolio, Project } from "../types/types";
+import { Experience, Portfolio, Project } from "../types/types";
 import {
   Box,
   TextField,
@@ -16,8 +16,12 @@ import {
   CardActions,
   IconButton,
 } from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
+import { Add, ArrowBack, Delete } from "@mui/icons-material";
 import { NavigateFunction, Location } from "react-router-dom";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment";
 
 type EditPortfolioProps = {
   navigate?: NavigateFunction;
@@ -58,6 +62,8 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
       this.validateFieldsBeforeSubmitting.bind(this);
     this.handleSocialPlatformNameChange =
       this.handleSocialPlatformNameChange.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
+    this.handleGoBack = this.handleGoBack.bind(this);
   }
 
   validateFieldsBeforeSubmitting(): boolean {
@@ -84,23 +90,37 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
       errors["phone"] = "Phone number must be 10 digits.";
     }
 
+    formData.skills.forEach((skill, index) => {
+      if (!skill) {
+        errors[`skill${index + 1}`] = `Skill ${index + 1} is required.`;
+      }
+    });
+
     formData.projects.forEach((project, index) => {
       if (!project.link) {
-        errors[`projects_${index}_link`] = `Project link for Project ${
-          index + 1
-        } is required.`;
+        errors[`project${index + 1}`] = `Project link is required.`;
       } else if (!/^https?:\/\/.+$/.test(project.link)) {
-        errors[`projects_${index}_link`] = `Invalid URL format for Project ${
-          index + 1
-        }.`;
+        errors[`project${index + 1}`] = `Invalid Project link format.`;
+      }
+    });
+
+    formData.experiences.forEach((experience, index) => {
+      if (!experience.companyName) {
+        errors[`companyName${index + 1}`] = "Company name is required.";
+      } else if (!experience.jobRole) {
+        errors[`jobRole${index + 1}`] = "Job role is required.";
+      } else if (!experience.jobDuration) {
+        errors[`jobDuration${index + 1}`] = "Job duration is required.";
+      } else if (!experience.jobDescription) {
+        errors[`jobDescription${index + 1}`] = "Job description is required.";
       }
     });
 
     Object.entries(formData.contact.socials).forEach(([platform, link]) => {
       if (!link) {
-        errors[`${platform}_link`] = `Link for ${platform} is required.`;
+        errors[`${platform}_link`] = `Link for platform is required.`;
       } else if (!/^https?:\/\/.+$/.test(link)) {
-        errors[`${platform}_link`] = `Invalid URL format for ${platform}.`;
+        errors[`${platform}_link`] = `Invalid URL format for platform.`;
       }
     });
 
@@ -124,10 +144,14 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayChange<K extends "skills" | "projects">(
+  handleArrayChange<K extends "skills" | "projects" | "experiences">(
     section: K,
     index: number,
-    value: K extends "skills" ? string : Project
+    value: K extends "skills"
+      ? string
+      : K extends "projects"
+      ? Project
+      : Experience
   ) {
     const updatedArray = [...this.state.formData[section]];
     updatedArray[index] = value;
@@ -139,9 +163,13 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayAdd<K extends "skills" | "projects">(
+  handleArrayAdd<K extends "skills" | "projects" | "experiences">(
     section: K,
-    elementToAdd: K extends "skills" ? string : Project
+    elementToAdd: K extends "skills"
+      ? string
+      : K extends "projects"
+      ? Project
+      : Experience
   ) {
     this.setState((prevState) => ({
       formData: {
@@ -151,7 +179,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }));
   }
 
-  handleArrayRemove<K extends "skills" | "projects">(
+  handleArrayRemove<K extends "skills" | "projects" | "experiences">(
     section: K,
     indexToRemove: number
   ) {
@@ -221,6 +249,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
 
       if (socials[newPlatform]) {
         console.error("Platform already exists");
+        alert("Platform already exists");
         return null;
       }
       socials[newPlatform] = socials[oldPlatform];
@@ -252,9 +281,92 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     }
   }
 
+  handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+    const errors: ValidationErrors = {};
+
+    if (name === "name" && !value) {
+      errors["name"] = "Name is required.";
+    } else if (name === "description" && !value) {
+      errors["description"] = "Description is required.";
+    } else if (name === "email") {
+      if (!value) {
+        errors["email"] = "Email is required.";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        errors["email"] = "Invalid email format.";
+      }
+    } else if (name === "phone") {
+      if (!value) {
+        errors["phone"] = "Phone number is required.";
+      } else if (!/^\d{10}$/.test(value)) {
+        errors["phone"] = "Invalid phone number format.";
+      }
+    } else if (name.includes("skill")) {
+      if (!value) {
+        errors[name] = `${name} is required.`;
+      }
+    } else if (name.includes("project")) {
+      if (!value) {
+        errors[name] = `Link for ${name} is requiured`;
+      } else if (!/^https?:\/\/.+$/.test(value)) {
+        errors[name] = `Link for ${name} is invalid`;
+      }
+    } else if (name.includes("link")) {
+      if (!value) {
+        errors[name] = `${name} is required.`;
+      } else if (!/^https?:\/\/.+$/.test(value)) {
+        errors[name] = `${name} is invalid.`;
+      }
+    } else if (name.includes("companyName")) {
+      if (!value) {
+        errors[name] = "Company name is required.";
+      }
+    } else if (name.includes("jobDuration")) {
+      if (!value) {
+        errors[name] = "Job duration is required.";
+      }
+    } else if (name.includes("jobDescription")) {
+      if (!value) {
+        errors[name] = "Job description is required.";
+      }
+    } else if (name.includes("jobRole")) {
+      if (!value) {
+        errors[name] = "Job role is required.";
+      }
+    }
+
+    this.setState({ validationErrors: errors });
+  }
+
+  handleGoBack() {
+    const { navigate, location } = this.props;
+
+    if (location?.state?.from === "/") {
+      navigate?.("/");
+      return;
+    }
+    navigate?.("/preview");
+  }
+
   render() {
     const { formData, validationErrors } = this.state;
-    const isUserCreatingPortfolio = this.props.location?.pathname === "/create";
+
+    const isUserCreatingResume = this.props.location?.pathname === "/create";
+    const isAddSkillButtonDisable =
+      formData.skills.length > 0 &&
+      !formData.skills[formData.skills.length - 1];
+    const isAddProjectButtonDisable =
+      formData.projects.length > 0 &&
+      !formData.projects[formData.projects.length - 1].link;
+    const isAddExperienceButtonDisable =
+      formData.experiences.length > 0 &&
+      !formData.experiences[formData.experiences.length - 1].jobDescription;
+    const isAddSocialLinkButtonDisable =
+      !formData.contact.socials[
+        Object.keys(formData.contact.socials)[
+          Object.keys(formData.contact.socials).length - 1
+        ]
+      ];
 
     return (
       <Box
@@ -268,13 +380,17 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
           mt: 4,
         }}
       >
-        <Typography variant="h4" gutterBottom>
-          {isUserCreatingPortfolio ? "Create Portfolio" : "Edit Portfolio"}
-        </Typography>
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          onBlur={this.validateFieldsBeforeSubmitting}
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={this.handleGoBack}
+          sx={{ mb: 2 }}
         >
+          Back
+        </Button>
+        <Typography variant="h4" gutterBottom>
+          {isUserCreatingResume ? "Create Resume" : "Edit Resume"}
+        </Typography>
+        <form onSubmit={(e) => e.preventDefault()}>
           {/* About Section */}
           <Card sx={{ mb: 4 }}>
             <CardContent>
@@ -285,10 +401,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 fullWidth
                 margin="normal"
                 label="Name"
+                name="name"
                 value={formData.about?.name || ""}
                 onChange={(e) =>
                   this.handleInputChange("about", "name", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["name"]}
                 helperText={validationErrors["name"]}
               />
@@ -296,6 +414,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 fullWidth
                 margin="normal"
                 label="Tagline"
+                name="tagline"
                 value={formData.about?.tagline || ""}
                 onChange={(e) =>
                   this.handleInputChange("about", "tagline", e.target.value)
@@ -307,10 +426,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 multiline
                 rows={4}
                 label="Description"
+                name="description"
                 value={formData.about?.description || ""}
                 onChange={(e) =>
                   this.handleInputChange("about", "description", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["description"]}
                 helperText={validationErrors["description"]}
               />
@@ -328,10 +449,14 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                   <TextField
                     fullWidth
                     label={`Skill ${index + 1}`}
+                    name={`skill${index + 1}`}
                     value={skill}
                     onChange={(e) =>
                       this.handleArrayChange("skills", index, e.target.value)
                     }
+                    onBlur={this.handleBlur}
+                    helperText={validationErrors[`skill${index + 1}`]}
+                    error={!!validationErrors[`skill${index + 1}`]}
                   />
                   <IconButton
                     sx={{ ml: 1 }}
@@ -346,6 +471,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 variant="outlined"
                 startIcon={<Add />}
                 onClick={() => this.handleArrayAdd("skills", "")}
+                disabled={isAddSkillButtonDisable}
               >
                 Add Skill
               </Button>
@@ -392,6 +518,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                     label="Project Link"
                     type="url"
                     required
+                    name={`project${index + 1}`}
                     value={project.link}
                     onChange={(e) =>
                       this.handleArrayChange("projects", index, {
@@ -399,10 +526,9 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                         link: e.target.value,
                       })
                     }
-                    error={!!validationErrors[`projects_${index}_link`]}
-                    helperText={
-                      validationErrors[`projects_${index}_link`] || ""
-                    }
+                    onBlur={this.handleBlur}
+                    error={!!validationErrors[`project${index + 1}`]}
+                    helperText={validationErrors[`project${index + 1}`] || ""}
                   />
                   <IconButton
                     color="error"
@@ -422,11 +548,164 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                     link: "",
                   })
                 }
+                disabled={isAddProjectButtonDisable}
               >
                 Add Project
               </Button>
             </CardContent>
           </Card>
+
+          {/* Experiences Section */}
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <Card sx={{ mb: 4 }}>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Experiences
+                </Typography>
+                {formData?.experiences?.map((experience, index) => (
+                  <Box key={index} sx={{ mb: 4 }}>
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      label="Company Name"
+                      required
+                      value={experience.companyName}
+                      name={`companyName${index + 1}`}
+                      onChange={(e) =>
+                        this.handleArrayChange("experiences", index, {
+                          ...experience,
+                          companyName: e.target.value,
+                        })
+                      }
+                      onBlur={this.handleBlur}
+                      error={!!validationErrors[`companyName${index + 1}`]}
+                      helperText={
+                        validationErrors[`companyName${index + 1}`] || ""
+                      }
+                    />
+                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                      <TextField
+                        margin="normal"
+                        label="Job Duration"
+                        name={`jobDuration${index + 1}`}
+                        // disabled
+                        required
+                        color="primary"
+                        sx={{ mb: 2 }}
+                        onBlur={this.handleBlur}
+                        error={!!validationErrors[`jobDuration${index + 1}`]}
+                        helperText={
+                          validationErrors[`jobDuration${index + 1}`] || ""
+                        }
+                      />
+                      <DatePicker
+                        views={["year", "month"]}
+                        label="From"
+                        value={moment(experience.startDate)}
+                        maxDate={moment(experience.endDate)}
+                        onChange={(newValue) =>
+                          this.handleArrayChange("experiences", index, {
+                            ...experience,
+                            startDate: newValue,
+                            jobDuration: `${moment(newValue).format(
+                              "MMM YYYY"
+                            )}- ${moment(experience.endDate).format(
+                              "MMM YYYY"
+                            )}`,
+                          })
+                        }
+                        slots={{
+                          textField: (props) => <TextField {...props} />,
+                        }}
+                      />
+                      <DatePicker
+                        views={["year", "month"]}
+                        label="To"
+                        value={moment(experience.endDate)}
+                        minDate={moment(experience.startDate)}
+                        onChange={(newValue) =>
+                          this.handleArrayChange("experiences", index, {
+                            ...experience,
+                            endDate: newValue,
+                            jobDuration: `${moment(experience.startDate).format(
+                              "MMM YYYY"
+                            )} - ${moment(newValue).format("MMM YYYY")}`,
+                          })
+                        }
+                        slots={{
+                          textField: (props) => <TextField {...props} />,
+                        }}
+                      />
+                    </Box>
+
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      label="Job Role"
+                      required
+                      name={`jobRole${index + 1}`}
+                      value={experience.jobRole}
+                      onChange={(e) =>
+                        this.handleArrayChange("experiences", index, {
+                          ...experience,
+                          jobRole: e.target.value,
+                        })
+                      }
+                      onBlur={this.handleBlur}
+                      error={!!validationErrors[`jobRole${index + 1}`]}
+                      helperText={validationErrors[`jobRole${index + 1}`] || ""}
+                    />
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      multiline
+                      rows={3}
+                      name={`jobDescription${index + 1}`}
+                      label="Job Description"
+                      required
+                      value={experience.jobDescription}
+                      onChange={(e) =>
+                        this.handleArrayChange("experiences", index, {
+                          ...experience,
+                          jobDescription: e.target.value,
+                        })
+                      }
+                      onBlur={this.handleBlur}
+                      error={!!validationErrors[`jobDescription${index + 1}`]}
+                      helperText={
+                        validationErrors[`jobDescription${index + 1}`]
+                      }
+                    />
+                    <IconButton
+                      color="error"
+                      onClick={() =>
+                        this.handleArrayRemove("experiences", index)
+                      }
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                ))}
+                <Button
+                  variant="outlined"
+                  startIcon={<Add />}
+                  onClick={() =>
+                    this.handleArrayAdd("experiences", {
+                      companyName: "",
+                      jobDuration: "",
+                      jobRole: "",
+                      jobDescription: "",
+                      startDate: null,
+                      endDate: null,
+                    })
+                  }
+                  disabled={isAddExperienceButtonDisable}
+                >
+                  Add Experience
+                </Button>
+              </CardContent>
+            </Card>
+          </LocalizationProvider>
 
           {/* Contact Section */}
           <Card sx={{ mb: 4 }}>
@@ -440,10 +719,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 label="Email"
                 type="email"
                 required
+                name="email"
                 value={formData.contact.email || ""}
                 onChange={(e) =>
                   this.handleInputChange("contact", "email", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["email"]}
                 helperText={validationErrors["email"]}
               />
@@ -453,10 +734,12 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 label="Phone"
                 type="tel"
                 required
+                name="phone"
                 value={formData.contact.phone || ""}
                 onChange={(e) =>
                   this.handleInputChange("contact", "phone", e.target.value)
                 }
+                onBlur={this.handleBlur}
                 error={!!validationErrors["phone"]}
                 helperText={validationErrors["phone"]}
               />
@@ -485,14 +768,16 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                       />
                       <TextField
                         fullWidth
-                        sx={{ ml: 2 }}
+                        sx={!mandatoryPlatform ? { ml: 2 } : { mr: 5, ml: 2 }}
                         label="Link"
                         type="url"
                         required
+                        name={`${platform}_link`}
                         value={link}
                         onChange={(e) =>
                           this.handleSocialLinkChange(platform, e.target.value)
                         }
+                        onBlur={this.handleBlur}
                         error={!!validationErrors[`${platform}_link`]}
                         helperText={validationErrors[`${platform}_link`]}
                       />
@@ -512,6 +797,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                 variant="outlined"
                 startIcon={<Add />}
                 onClick={this.handleSocialLinkAdd}
+                disabled={isAddSocialLinkButtonDisable}
               >
                 Add Social Link
               </Button>
@@ -533,7 +819,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
               color="primary"
               onClick={this.handleSubmit}
             >
-              {isUserCreatingPortfolio ? "Create Portfolio" : "Save Changes"}
+              {isUserCreatingResume ? "Create Resume" : "Save Changes"}
             </Button>
           </CardActions>
         </form>

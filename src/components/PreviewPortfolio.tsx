@@ -25,19 +25,19 @@ import {
   Facebook,
   Instagram,
   YouTube,
+  ArrowBack,
 } from "@mui/icons-material";
 import html2pdf from "html2pdf.js";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Capacitor } from "@capacitor/core";
+import portfolioService from "../service/portfolioService";
 
 type PreviewPortfolioProps = {
   navigate?: NavigateFunction;
   location?: Location;
 };
 
-type stateProps = {
-  pdfName: string;
-};
-
-class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
+class PreviewPortfolio extends Component<PreviewPortfolioProps> {
   static contextType = PortfolioContext;
   declare context: portfolioContextType;
 
@@ -45,36 +45,70 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
 
   constructor(props: PreviewPortfolioProps) {
     super(props);
-    this.state = {
-      pdfName: "",
-    };
     this.portfolioRef = React.createRef();
     this.handleDownloadClick = this.handleDownloadClick.bind(this);
     this.handleEditClick = this.handleEditClick.bind(this);
+    this.handleGoBack = this.handleGoBack.bind(this);
   }
 
   componentDidMount(): void {
-    const { portfolio } = this.context;
-    this.setState({ pdfName: portfolio?.about?.name || "" });
+    const { setPortfolio } = this.context;
+    setPortfolio(portfolioService.getLocalStoragePortfolio());
   }
 
   async handleDownloadClick() {
+    const { portfolio } = this.context;
+    const pdfname = `${portfolio?.about.name}_portfolio.pdf`;
     const element = document.querySelector("#content-download");
     const options = {
-      filename: `${this.state.pdfName}_portfolio.pdf`,
+      filename: pdfname,
       html2canvas: { scale: 2, logging: true, letterRendering: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait",
+      },
+      pagebreak: { mode: "css", after: ".section_wise_div",avoid:"#row" },
     };
-    await html2pdf().from(element).set(options).save();
+    const platform = Capacitor.getPlatform();
+
+    if (platform === "web") {
+      await html2pdf().from(element).set(options).save();
+      return;
+    }
+    const pdf = await html2pdf()
+      .from(element)
+      .set(options)
+      .outputPdf("datauristring");
+    await this.savePDFOnAndroid(pdf, options.filename);
+  }
+
+  async savePDFOnAndroid(pdfDataUri: string, pdfname: string) {
+    try {
+      const pdfBase64Data = pdfDataUri.split(",")[1];
+      await Filesystem.writeFile({
+        path: pdfname,
+        data: pdfBase64Data,
+        directory: Directory.Documents,
+      });
+      alert("PDF saved to your device in Documents directory!");
+    } catch (error) {
+      console.log("Error saving PDF to device:", error);
+    }
   }
 
   handleEditClick() {
     this.props.navigate?.("/edit");
   }
 
+  handleGoBack() {
+    const { navigate } = this.props;
+    navigate?.("/");
+  }
+
   render() {
     const { portfolio } = this.context;
-    const { about, skills, projects, contact } = { ...portfolio };
+    const { about, skills, projects, contact, experiences } = { ...portfolio };
     const platformIcons = {
       github: <GitHub />,
       linkedin: <LinkedIn />,
@@ -95,6 +129,14 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
         borderRadius={4}
         boxShadow={3}
       >
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={this.handleGoBack}
+          sx={{ mb: 2 }}
+          data-html2canvas-ignore
+        >
+          Back
+        </Button>
         {/* About Section */}
         <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
           <CardHeader
@@ -122,87 +164,151 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
         </Card>
 
         {/* Skills Section */}
-        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
-          <CardHeader
-            title="Skills"
-            titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
-          />
-          <CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 1,
-              }}
-            >
-              {skills?.map((skill, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "inline-block",
-                    px: 2,
-                    py: 0.5,
-                    bgcolor: "primary.light",
-                    color: "primary.contrastText",
-                    borderRadius: 2,
-                    fontWeight: "bold",
-                    fontSize: "0.9rem",
-                    textAlign: "center",
-                    border: "1px solid",
-                    borderColor: "primary.main",
-                  }}
-                >
-                  {skill}
-                </Box>
-              ))}
-            </Box>
-          </CardContent>
-        </Card>
-
-        {/* Projects Section */}
-        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
-          <CardHeader
-            title="Projects"
-            titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
-          />
-          <CardContent>
-            <Grid container spacing={2}>
-              {projects?.map((project, index) => (
-                <Grid item xs={12} md={6} key={index}>
-                  <Card
-                    variant="outlined"
+        {skills?.length ? (
+          <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+            <CardHeader
+              title="Skills"
+              titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
+            />
+            <CardContent>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 1,
+                }}
+              >
+                {skills?.map((skill, index) => (
+                  <Box
+                    key={index}
                     sx={{
-                      height: "100%",
-                      transition: "transform 0.2s",
-                      "&:hover": { transform: "scale(1.02)" },
+                      display: "inline-block",
+                      px: 2,
+                      py: 0.5,
+                      bgcolor: "primary.light",
+                      color: "primary.contrastText",
+                      borderRadius: 2,
+                      fontWeight: "bold",
+                      fontSize: "0.9rem",
+                      textAlign: "center",
+                      border: "1px solid",
+                      borderColor: "primary.main",
                     }}
                   >
-                    <CardHeader
-                      title={project.title}
-                      titleTypographyProps={{ variant: "h6" }}
-                    />
-                    <CardContent>
-                      <Typography variant="body2" color="textSecondary">
-                        {project.description}
-                      </Typography>
-                      <Button
-                        href={project.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        size="small"
-                        sx={{ mt: 1, color: "blue" }}
-                        color="secondary"
-                        variant="text"
-                      >
-                        View Project
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </CardContent>
-        </Card>
+                    {skill}
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {/* Experiences Section */}
+        {experiences?.length ? (
+          <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+            <CardHeader
+              title="Experiences"
+              titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
+            />
+            <CardContent>
+              <Grid>
+                {experiences?.map((experience, index) => (
+                  <Grid item xs={12} md={6} key={index} mb={2}>
+                    <Card
+                      variant="elevation"
+                      sx={{
+                        height: "100%",
+                        // transition: "transform 0.2s",
+                        // "&:hover": { transform: "scale(1.02)" },
+                        boxShadow: 0.6,
+                      }}
+                    >
+                      <CardContent>
+                        <Grid
+                          container
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: "bold", textAlign: "left" }}
+                          >
+                            {experience.companyName}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            {experience.jobDuration}
+                          </Typography>
+                        </Grid>
+                        <Typography
+                          variant="body2"
+                          color="textPrimary"
+                          sx={{ mt: 1 }}
+                        >
+                          {experience.jobRole}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          sx={{ mt: 1 }}
+                        >
+                          {experience.jobDescription}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {/* Projects Section */}
+        {projects?.length ? (
+          <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
+            <CardHeader
+              title="Projects"
+              titleTypographyProps={{ variant: "h5", fontWeight: "bold" }}
+            />
+            <CardContent>
+              <Grid>
+                {projects?.map((project, index) => (
+                  <Grid item xs={12} md={6} key={index} mb={2}>
+                    <Card
+                      variant="elevation"
+                      sx={{
+                        height: "100%",
+                        boxShadow: 0.6,
+                        // transition: "transform 0.2s",
+                        // "&:hover": { transform: "scale(1.02)" },
+                      }}
+                    >
+                      <CardHeader
+                        title={project.title}
+                        titleTypographyProps={{ variant: "h6" }}
+                      />
+                      <CardContent>
+                        <Typography variant="body2" color="textSecondary">
+                          {project.description}
+                        </Typography>
+                        <Button
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          size="small"
+                          sx={{ mt: 1, color: "blue" }}
+                          color="secondary"
+                          variant="text"
+                        >
+                          View Project
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        ) : null}
 
         {/* Contact Section */}
         <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 5 }}>
@@ -222,7 +328,7 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
             </Typography>
             <Box mt={2}>
               <Typography variant="subtitle1">Socials:</Typography>
-              <Box display="flex" gap={2} mt={1}>
+              <Box display="flex" gap={2} mt={1} flexWrap="wrap">
                 {Object.entries(contact?.socials ?? {}).map(
                   ([platform, link], index) => (
                     <Button
@@ -282,7 +388,7 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps, stateProps> {
             }}
             startIcon={<Edit />}
           >
-            Edit Portfolio
+            Edit Resume
           </Button>
         </CardActions>
       </Box>

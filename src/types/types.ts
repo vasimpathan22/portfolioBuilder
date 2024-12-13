@@ -1,3 +1,5 @@
+import moment from "moment";
+
 interface About {
   name: string;
   tagline: string;
@@ -16,6 +18,15 @@ interface Socials {
   [key: string]: string;
 }
 
+export interface Experience {
+  companyName: string;
+  jobDuration: string;
+  jobRole: string;
+  jobDescription: string;
+  startDate: moment.Moment | null;
+  endDate: moment.Moment | null;
+}
+
 interface Contact {
   email: string;
   phone: string;
@@ -27,4 +38,5 @@ export interface Portfolio {
   skills: string[];
   projects: Project[];
   contact: Contact;
+  experiences: Experience[];
 }

@@ -12,6 +12,7 @@ class PortfolioService {
       about: { description: "", name: "", tagline: "" },
       skills: [],
       projects: [],
+      experiences: [],
       contact: {
         email: "",
         phone: "",
@@ -24,8 +25,22 @@ class PortfolioService {
   }
 
   savePortfolioToLocalStorage(portfolio: Portfolio) {
+    const savedPortfolios = this.getAllPortfolios();
+    const portfolioIndex = localStorage.getItem("currentPortfolioIndex");
+    if (portfolioIndex) {
+      savedPortfolios[+portfolioIndex] = portfolio;
+      console.log(`Updated the portfolio at index ${portfolioIndex}`);
+    } else {
+      savedPortfolios.push(portfolio);
+      const savedPortfoliosLength = savedPortfolios.length - 1;
+      localStorage.setItem(
+        "currentPortfolioIndex",
+        savedPortfoliosLength.toString()
+      );
+      console.log("saved new portfolio");
+    }
     localStorage.setItem("portfolio", JSON.stringify(portfolio));
-    console.log("portfolioService::savedPortfolio");
+    localStorage.setItem("portfolios", JSON.stringify(savedPortfolios));
   }
 
   resetPortfolio(): Portfolio {
@@ -33,6 +48,7 @@ class PortfolioService {
       about: { description: "", name: "", tagline: "" },
       skills: [],
       projects: [],
+      experiences: [],
       contact: {
         email: "",
         phone: "",
@@ -44,6 +60,23 @@ class PortfolioService {
     };
     localStorage.setItem("portfolio", JSON.stringify(newPortfolio));
     return newPortfolio;
+  }
+
+  getAllPortfolios(): Portfolio[] {
+    const savedPortfolios = localStorage.getItem("portfolios");
+    if (savedPortfolios) {
+      return JSON.parse(savedPortfolios);
+    }
+    return [];
+  }
+
+  deletePortfolio(index: number) {
+    const savedPortfolios = this.getAllPortfolios();
+    savedPortfolios.splice(index, 1);
+    localStorage.setItem("portfolios", JSON.stringify(savedPortfolios));
+    localStorage.removeItem("currentPortfolioIndex");
+    localStorage.removeItem("portfolio");
+    console.log(`Deleted the portfolio at index ${index}`);
   }
 }
 
