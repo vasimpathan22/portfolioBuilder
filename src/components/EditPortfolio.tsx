@@ -274,9 +274,14 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
     if (this.validateFieldsBeforeSubmitting()) {
       const { updatePortfolio } = this.context;
       const { formData } = this.state;
-      const { navigate } = this.props;
+      const { navigate, location } = this.props;
 
       updatePortfolio(formData);
+      if (location?.pathname === "/create") {
+        navigate?.("/preview", { state: { from: "/create" } });
+        return;
+      }
+
       navigate?.("/preview");
     }
   }
@@ -346,6 +351,17 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
       return;
     }
     navigate?.("/preview");
+  }
+
+  handleCreatePortfolio() {
+    if (this.validateFieldsBeforeSubmitting()) {
+      const { updatePortfolio } = this.context;
+      const { formData } = this.state;
+      const { navigate } = this.props;
+
+      updatePortfolio(formData);
+      navigate?.("/preview", { state: { from: "/create" } });
+    }
   }
 
   render() {
@@ -588,7 +604,7 @@ class EditPortfolio extends Component<EditPortfolioProps, stateProps> {
                         margin="normal"
                         label="Job Duration"
                         name={`jobDuration${index + 1}`}
-                        // disabled
+                        disabled
                         required
                         color="primary"
                         sx={{ mb: 2 }}

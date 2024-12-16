@@ -33,10 +33,15 @@ interface Contact {
   socials: Socials;
 }
 
+interface PdfData {
+  pdfBase64Data: string;
+}
+
 export interface Portfolio {
   about: About;
   skills: string[];
   projects: Project[];
   contact: Contact;
   experiences: Experience[];
+  pdfData?: PdfData;
 }

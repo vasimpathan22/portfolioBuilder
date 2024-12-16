@@ -51,7 +51,6 @@ class Home extends Component<HomeProps, HomeStateProps> {
   handleEditPortfolio(portfolio: Portfolio, index: number) {
     localStorage.setItem("currentPortfolioIndex", index.toString());
     localStorage.setItem("portfolio", JSON.stringify(portfolio));
-    console.log(this.props.location?.pathname);
 
     this.props.navigate?.("/edit", {
       state: { from: "/" },

@@ -11,6 +11,7 @@ export type portfolioContextType = {
   portfolio: Portfolio | null;
   setPortfolio: React.Dispatch<React.SetStateAction<Portfolio | null>>;
   updatePortfolio: (newPortfolio: Portfolio) => void;
+  updatePdfBase64Data: (pdfBase64Data: string) => void;
 };
 
 export const PortfolioContext = createContext<portfolioContextType | null>(
@@ -27,9 +28,16 @@ export const PortfolioProvider = ({ children }: childrenProp) => {
     portfolioService.savePortfolioToLocalStorage(newPortfolio);
   };
 
+  const updatePdfBase64Data = (pdfBase64Data: string) => {
+    const newportfolio = { ...portfolio };
+    newportfolio.pdfData = { pdfBase64Data };
+    setPortfolio(newportfolio as Portfolio);
+    portfolioService.savePortfolioToLocalStorage(newportfolio as Portfolio);
+  };
+
   return (
     <PortfolioContext.Provider
-      value={{ portfolio, setPortfolio, updatePortfolio }}
+      value={{ portfolio, setPortfolio, updatePortfolio, updatePdfBase64Data }}
     >
       {children}
     </PortfolioContext.Provider>

@@ -49,11 +49,46 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps> {
     this.handleDownloadClick = this.handleDownloadClick.bind(this);
     this.handleEditClick = this.handleEditClick.bind(this);
     this.handleGoBack = this.handleGoBack.bind(this);
+    this.generatePdfBase64data = this.generatePdfBase64data.bind(this);
+    this.createPdfBase64data = this.createPdfBase64data.bind(this);
   }
 
   componentDidMount(): void {
     const { setPortfolio } = this.context;
     setPortfolio(portfolioService.getLocalStoragePortfolio());
+    this.createPdfBase64data();
+  }
+
+  async createPdfBase64data() {
+    const { location } = this.props;
+    const { updatePdfBase64Data } = this.context;
+    if (location?.state?.from === "/create") {
+      const pdfBase64data = await this.generatePdfBase64data();
+      updatePdfBase64Data(pdfBase64data);
+      console.log("Created pdfBase64data");
+    }
+    console.log("pdfBase64data is Already created");
+  }
+
+  async generatePdfBase64data(): Promise<string> {
+    const { portfolio } = this.context;
+    const pdfname = `${portfolio?.about.name}_portfolio.pdf`;
+    const element = document.querySelector("#content-download");
+    const options = {
+      filename: pdfname,
+      html2canvas: { scale: 2, logging: true, letterRendering: true },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait",
+      },
+      pagebreak: { mode: "css", after: ".section_wise_div", avoid: "#row" },
+    };
+    const pdfbase64Data = html2pdf()
+      .from(element)
+      .set(options)
+      .outputPdf("datauristring");
+    return pdfbase64Data;
   }
 
   async handleDownloadClick() {
@@ -68,19 +103,18 @@ class PreviewPortfolio extends Component<PreviewPortfolioProps> {
         format: "a4",
         orientation: "portrait",
       },
-      pagebreak: { mode: "css", after: ".section_wise_div",avoid:"#row" },
+      pagebreak: { mode: "css", after: ".section_wise_div", avoid: "#row" },
     };
     const platform = Capacitor.getPlatform();
 
+    const savePdfProcess = html2pdf().from(element).set(options);
+
     if (platform === "web") {
-      await html2pdf().from(element).set(options).save();
+      await savePdfProcess.save();
       return;
     }
-    const pdf = await html2pdf()
-      .from(element)
-      .set(options)
-      .outputPdf("datauristring");
-    await this.savePDFOnAndroid(pdf, options.filename);
+    const pdfbase64Data = await savePdfProcess.outputPdf("datauristring");
+    await this.savePDFOnAndroid(pdfbase64Data, options.filename);
   }
 
   async savePDFOnAndroid(pdfDataUri: string, pdfname: string) {
