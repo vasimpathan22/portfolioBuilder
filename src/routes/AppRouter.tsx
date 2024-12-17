@@ -4,6 +4,7 @@ import {
   EditPortfolioWithNavigation,
   PreviewPortfolioWithNavigation,
 } from "../components";
+import Home1WithNavigation from "../components/Home1";
 
 function AppRouter() {
   return (
@@ -13,6 +14,7 @@ function AppRouter() {
         <Route path="/edit" element={<EditPortfolioWithNavigation />} />
         <Route path="/preview" element={<PreviewPortfolioWithNavigation />} />
         <Route path="/create" element={<EditPortfolioWithNavigation />} />
+        <Route path="/home" element={<Home1WithNavigation />} />
       </Routes>
     </BrowserRouter>
   );
